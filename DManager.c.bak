@@ -303,8 +303,7 @@ char 	DM_Fill_TxBuf(char slave, char offs, char *wert, char konv)
 		case AOUT_FORMP:
 			pAASP	=	(aasp*)*(long*)wert;					// Extrahieren der Adresse,	auf	die	"awert" zeigt
 			intwert  = pAASP->awert;							// Analogausgabewert
-			charwert = pAASP->astat;							// Messwertstatus
-			goto messwertload;
+			goto intload;
 					
 				
 	}

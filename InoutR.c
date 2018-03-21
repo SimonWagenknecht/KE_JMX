@@ -1,8 +1,12 @@
-/*	Task: InoutR																	*/
-/*	Ein/Ausgabe über Erweiterungsmodule R37, R38	*/
-/*	07.07.2003 erweitert mit R39									*/
+/*  Task: InoutR                                  */
+/*  Ein/Ausgabe über Erweiterungsmodule R37, R38  */
+/*  07.07.2003 erweitert mit R39                  */
+/*  25.09.2017 R3X-Simulator                      */
+/*  30.10.2017 Adressüberprüfung                  */
+/*  13.11.2017 Modulkonfiguration                 */
 
 
+#include "sfr32C87.h"
 #include "struct.h"
 #include "ustruct.h"
 #include "defins.h"
@@ -21,31 +25,52 @@ void load_verbr(char num, char znum, char monat);
 //	Anzahl der Geräte:							max. 4
 //	Taskaufruf:											alle 50 ms
 //	Auftragsstart 1.Modul:					50ms nach Task: Output
+
+#define R66_Adr 1
  
 void InoutR(void)
 {
-	char  i, dev, num, rc, rc1, diginp, mask, znum, zaufnum;
+	char  i, dev, num, rc, rc1, diginp, mask, znum, zaufnum, digi;
 	ULONG neuwert, altwert, ul_mess;
 	UINT  diffwert, incwert, ae_zahl, faktor;
-
+	char rc_adr = 0;
 	incwert = 0;
 	
-	if(iocnt >= R3MAX)														// maximal 4 Module
-		iocnt = 0;
+	
+	if(ea_simul > 0)	// EA-Simulation ?
+		iocnt_max = 5;
+	else
+		iocnt_max = 4;	// 0...3 : maximal 4 Module
+		
+			
+	if(iocnt >= iocnt_max)
+	{
+		 iocnt = 0;
+	}
 	
 	// Auftragsabfrage
 	if(proc_IO ==	TRUE)																					// Auftrag ausgelöst
 	{	if(vec[VEC_IO].request ==	0)															// Auftrag beendet ?
 		{	proc_IO = FALSE;																				// ja, Auftrag löschen
-			dev = Projekte[proj_typ].iobl[iocnt].iodev;							// Gerätekennzeichen
-			num = (char)(Projekte[proj_typ].iobl[iocnt].ionum - 1);	// Gerätenummer
+			
+			if(iocnt == 4 )	// EA-Simulation ?
+			{
+				dev = R66;
+				num = 0;																							// Gerätenummer immer 0
+			}
+			else
+			{				
+				dev = Projekte[proj_typ].iobl[iocnt].iodev;							// Gerätekennzeichen
+				num = (char)(Projekte[proj_typ].iobl[iocnt].ionum - 1);	// Gerätenummer
+			}
 			rc	= vec[VEC_IO].rcode;																// Returncode	des	Handlers
 			rc1 = vec[VEC_IO].buffer[2];														// Returncode des Teilnehmers
-
+			rc_adr = vec[VEC_IO].buffer[1];													// Adresse des Teilnehmers
+			
 			switch(dev)
 			{	
 				case R37:
-					if((rc == RC_OK) && (rc1 == RC_OK))
+					if((rc == RC_OK) && (rc1 == RC_OK) && (rc_adr == mod37[num].adr) )
 					{
 						// Erstes Datenbyte: Diginp		
 						diginp = vec[VEC_IO].buffer[3];
@@ -186,7 +211,7 @@ void InoutR(void)
 					
 				//-------------------------------------------------------------------------
 				case R38:
-					if((rc == RC_OK) && (rc1 == RC_OK))
+					if((rc == RC_OK) && (rc1 == RC_OK) && (rc_adr == mod38[num].adr) )
 					{	// 14 * 3 Datenbytes: pt_mewe
 						memcpy(&mod38[num].pt_mewe[0], &vec[VEC_IO].buffer[3], 42);
 						mod38[num].errcnt = 0;
@@ -202,11 +227,20 @@ void InoutR(void)
 						else
 							mod38[num].errcnt++;			 
 					}
+					// Lifetest
+					faktor = mod38[num].life;		// maske bilden
+					for(i = 0; i < 14; i++)
+					{
+						if( (faktor & 0x0001) != 0x0001)
+							mod38[num].pt_mewe[i].stat = NICHTV;
+						
+						faktor >>= 1;
+					} 
 					break;
 
 				//-------------------------------------------------------------------------
 				case R39:
-					if((rc == RC_OK) && (rc1 == RC_OK))						// Datenübertragung ok
+					if((rc == RC_OK) && (rc1 == RC_OK) && (rc_adr == mod39[num].adr) )						// Datenübertragung ok
 					{
 						// 3. Datenbyte: Status der Kontaktspannung UK24
 						mod39[num].Derror = vec[VEC_IO].buffer[5];
@@ -258,7 +292,7 @@ void InoutR(void)
 					break;			
 
 				case R33:
-					if((rc == RC_OK) && (rc1 == RC_OK))
+					if((rc == RC_OK) && (rc1 == RC_OK) && (rc_adr == mod33[num].adr) )
 					{
 						// 6 Datenbytes: swstat		(Status der Handschalter)				
 						memcpy(&mod33[num].sw_stat[0], &vec[VEC_IO].buffer[3], 6);
@@ -272,6 +306,34 @@ void InoutR(void)
 						else
 							mod33[num].errcnt++;	
 					}
+					break;
+					
+				case R66:
+					if((rc == RC_OK) && (rc1 == RC_OK)  && (rc_adr == R66_Adr) )						// Datenübertragung ok
+					{
+						// 2 Datenbytes: Schaltgr1 und Schaltgr2		(Status der Handschalter)				
+						Schaltgr1 = vec[VEC_IO].buffer[3];
+						Schaltgr2 = vec[VEC_IO].buffer[4];
+						Diginp = vec[VEC_IO].buffer[5];
+						mask = 1;
+						for(i = 0; i < 8; i++)
+						{
+							if( (Diginp & mask) == mask)
+								di_mewe[i].bwert = 1;
+							else
+								di_mewe[i].bwert = 0;
+								
+							di_mewe[i].bstat = 0;	
+								
+							mask <<= 1;	
+						}
+						memcpy(&pt_mewe[0], &vec[VEC_IO].buffer[6],    24);
+						memcpy(&ae_mewe[0], &vec[VEC_IO].buffer[6+24], 24);
+						names_anford = vec[VEC_IO].buffer[54];						// Anforderung für Übertragung von I/O-Bezeichnungen (Parameternamen)
+						projekt_anford = vec[VEC_IO].buffer[55];					// Anforderung für Übertragung von Modulkonfigurationen
+					}					
+					
+					break;	
 						
 			}					
 			iocnt++;
@@ -301,6 +363,7 @@ void InoutR(void)
 			case 1:														// 2.- 4. Modul
 			case 2:
 			case 3:
+			case 4:
 				if(loadiov(iocnt) == FALSE)
 					iocnt++;
 				break;
@@ -322,15 +385,26 @@ char loadiov(char iocnt)
 		char adr = 0;
 		char dev = 0;
 		char num = 0;
+		char i;
+		char n;
+		char leng;
 		
-		dev = Projekte[proj_typ].iobl[iocnt].iodev;							// Gerätekennzeichen
-		num = (char)(Projekte[proj_typ].iobl[iocnt].ionum - 1);	// Gerätenummer
+		if(iocnt == 4 )	// EA-Simulation ?
+		{
+			dev = R66;
+			adr = R66_Adr;
+		}
+		else
+		{
+			dev = Projekte[proj_typ].iobl[iocnt].iodev;							// Gerätekennzeichen
+			num = (char)(Projekte[proj_typ].iobl[iocnt].ionum - 1);	// Gerätenummer
+		}
 		
 		switch(dev)
 		{	
 			case 0:
 				return(FALSE);
-				
+
 			case R37:
 				bus = mod37[num].bus;
 				adr = mod37[num].adr;
@@ -345,6 +419,20 @@ char loadiov(char iocnt)
 				check_zaehler(num);
 				vec[VEC_IO].buffer[9] = mod37[num].znum;			//	"				Zählernummer
 				vec[VEC_IO].buffer[10]= mod37[num].zaufnum;		//	"				Auftragsnummer
+
+				// Bezeichnung anhängen ?
+				if(ea_simul > 0 && names_anford > 0)
+				{
+					vec[VEC_IO].buffer[11]	= r37text_cnt[num];
+					for(i = 0; i < 20; i++)
+					{
+						vec[VEC_IO].buffer[12+i] = n37text[num][r37text_cnt[num]][i];
+					}
+					vec[VEC_IO].buffer[1] =	9 + 21;							// Leng: Kommando + Daten korrigieren
+					
+					if(++r37text_cnt[num] > 12)
+						r37text_cnt[num] = 0;
+				} 
 				break;
 
 			case R38:
@@ -354,6 +442,21 @@ char loadiov(char iocnt)
 				vec[VEC_IO].buffer[2] = R35_KOM;							// Kommando (Primärkommando)
 				vec[VEC_IO].buffer[3] = R38_IODAT;						// Daten 		(SubKommando)
 				*((unsigned int *)(&vec[VEC_IO].buffer[4])) = mod38[num].inpUsed;		// Maske aller verwendeten Pt1000-Eingänge
+
+				// Bezeichnung anhängen ?
+				if(ea_simul > 0 && names_anford > 0)
+				{
+					vec[VEC_IO].buffer[6]	= r38text_cnt[num];
+					for(i = 0; i < 20; i++)
+					{
+						vec[VEC_IO].buffer[7+i] = n38text[num][r38text_cnt[num]][i];
+					}
+					vec[VEC_IO].buffer[1] =	4 + 21;							// Leng: Kommando + Daten korrigieren
+					
+					if(++r38text_cnt[num] > 13)
+						r38text_cnt[num] = 0;
+				} 
+
 				break;
 			
 			case R39:
@@ -362,7 +465,21 @@ char loadiov(char iocnt)
 				vec[VEC_IO].buffer[1] =	4;										// Leng: Kommando + Daten
 				vec[VEC_IO].buffer[2] = R35_KOM;							// Kommando (Primärkommando)
 				vec[VEC_IO].buffer[3] = R39_IODAT;						// Daten 		(SubKommando)
-				*((unsigned int *)(&vec[VEC_IO].buffer[4])) = mod39[num].Digart;		// Maske für Digitalart 
+				*((unsigned int *)(&vec[VEC_IO].buffer[4])) = mod39[num].Digart;		// Maske für Digitalart
+				
+				// Bezeichnung anhängen ?
+				if(ea_simul > 0 && names_anford > 0)
+				{
+					vec[VEC_IO].buffer[6]	= r39text_cnt[num];
+					for(i = 0; i < 20; i++)
+					{
+						vec[VEC_IO].buffer[7+i] = n39text[num][r39text_cnt[num]][i];
+					}
+					vec[VEC_IO].buffer[1] =	4 + 21;							// Leng: Kommando + Daten korrigieren
+					
+					if(++r39text_cnt[num] > 11)
+						r39text_cnt[num] = 0;
+				} 
 				break;
 
 			case R33:
@@ -372,20 +489,84 @@ char loadiov(char iocnt)
 				vec[VEC_IO].buffer[2] = R35_KOM;							// Kommando (Primärkommando)
 				vec[VEC_IO].buffer[3] = R33_IODAT;						// Daten 		(SubKommando)
 				vec[VEC_IO].buffer[4] = mod33[num].Digout;		//	"				(Erstellt in Output.c)
+
+				// Bezeichnung anhängen ?
+				if(ea_simul > 0 && names_anford > 0)
+				{
+					vec[VEC_IO].buffer[5]	= r33text_cnt[num];
+					for(i = 0; i < 20; i++)
+					{
+						vec[VEC_IO].buffer[6+i] = n33text[num][r33text_cnt[num]][i];
+					}
+					vec[VEC_IO].buffer[1] =	3 + 21;							// Leng: Kommando + Daten korrigieren
+					
+					if(++r33text_cnt[num] > 5)
+						r33text_cnt[num] = 0;
+				} 
 				break;
-				
+			
+			case R66:
+				n = 1;
+				leng = 12;
+				vec[VEC_IO].buffer[n++] =	leng;									// Leng: Kommando + Daten
+				vec[VEC_IO].buffer[n++] = R35_KOM;							// Kommando (Primärkommando)
+				vec[VEC_IO].buffer[n++] = R66_IODAT;						// Daten 		(SubKommando)
+				vec[VEC_IO].buffer[n++] = LedRot;								//	
+				vec[VEC_IO].buffer[n++] = LedGelb;							//
+				vec[VEC_IO].buffer[n++] = LedBlau;							//
+				vec[VEC_IO].buffer[n++] = Digout;								//	"				(Erstellt in Output.c)
+				vec[VEC_IO].buffer[n++] = anout[0];							//	"				(Erstellt in Output.c)
+				vec[VEC_IO].buffer[n++] = anout[1];							//	"				(Erstellt in Output.c)
+				vec[VEC_IO].buffer[n++] = ptcontrol;						// Pt1000 Eingänge (3-10)	
+				vec[VEC_IO].buffer[n++] = aecontrol;						// Analog Eingänge (3-10)
+				vec[VEC_IO].buffer[n++] = names_anford;					// Quittierung für Namens-Anforderung senden
+				vec[VEC_IO].buffer[n++] = projekt_anford;				// Quittierung für Projekt-Anforderung senden
+
+				// Bezeichnung anhängen ?
+				if(ea_simul > 0 && names_anford > 0)
+				{
+					vec[VEC_IO].buffer[n++]	= r66text_cnt;
+					for(i = 0; i < 20; i++)
+					{
+						vec[VEC_IO].buffer[n++] = ntext[r66text_cnt][i];
+					}
+					leng += 21;
+					vec[VEC_IO].buffer[1] =	leng;									// Leng: Kommando + Daten korrigieren
+					
+					if(++r66text_cnt > 17)
+						r66text_cnt = 0;
+				}
+				// Modulkonfiguration anhängen
+				if(ea_simul > 0 && projekt_anford > 0)
+				{
+					vec[VEC_IO].buffer[n++]	= R37_MODULE;
+					vec[VEC_IO].buffer[n++]	= R38_MODULE;
+					vec[VEC_IO].buffer[n++]	= R39_MODULE;
+					vec[VEC_IO].buffer[n++]	= R33_MODULE;
+					leng += 4;
+					vec[VEC_IO].buffer[1] =	leng;									// Leng: Kommando + Daten korrigieren
+				}
+					
+					
+				 
+				break;
+					
 			default:
 				return(FALSE);
+				break;	
 			
 		}		
+		
+		if(ea_simul > 0)											// EA-Simulation ?
+			bus = FB_GBUS;
 				 
 		
-		if(bus 	 == FB_XBUS)									// BUS-Kennung XBUS
+		if(bus 	 == FB_XBUS)									// FB_XBUS: BUS-Kennung XBUS
 		{	flag 		= TRUE;
 			request = 0x21;											// Kennung:IFU-Gerät + 1 Versuche
 			master	= MASTER_IFU;												// 3=HandlerIFU
 		}	
-		else																	// BUS-Kennung GBUS
+		else																	// FB_GBUS: BUS-Kennung GBUS
 		{	//	gibt es	einen	GBUS-Master ?
 			if(Mode_S1	== MASTER	|| Mode_S2 ==	MASTER || (Mode_S3 ==	MASTER && spl_kennung == SPL_RS485) )
 			{	flag = TRUE;

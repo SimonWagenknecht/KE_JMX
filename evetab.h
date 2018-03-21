@@ -1,5 +1,5 @@
-// Diese Datei wurde automatisch am : 01.11.2017 um 15:01:39 generiert und entspricht der Systemversion nach 04.09.2012 13:47:53!!!
-// Path: C:\RIEcon36C\Softwarepool\Softwarepool_PES_ 2017\KE_JMX71\KE_R_1ss3_JMX71\KE_R_1ss3_JMX71\User\Komtabparser.exe
+// Diese Datei wurde automatisch am : 21.03.2018 um 10:29:41 generiert und entspricht der Systemversion nach 19.07.2017 10:21:03!!!
+// Path: C:\RIEcon36C\Softwarepool\Softwarepool_PES_2018\KE_JMX81\KE_1ss3_JMX81\User\Komtabparser.exe
 
-#define	PETAB_DEFL 15
-#define	SETAB_DEFL 60
+#define	PETAB_DEFL 11
+#define	SETAB_DEFL 56

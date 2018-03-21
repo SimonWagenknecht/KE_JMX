@@ -785,6 +785,8 @@ extern AlarmVar	alarmtab[];
 extern char quit_taste;
 extern char un_qsm;							// 1 = Unquittierte Störungen vorhanden
 extern char unbek_Alarm;				// unbekannter Alarm (alarmtab - Index)
+char sstm_alarme;					// Merker für Alarme, für SSTM-Relais, Eintrag in parli für KomtabCopy
+char sstm_all;						// Merker für alle Alarme inclusive Fühler, Eintrag in parli für KomtabCopy
 
 extern UINT alarmlist_dae[];		// aktuelle Alarme in einer Liste merken (für RFB):  2 Byte DAE-Nummer
 extern char alarmanz_dae;
@@ -1056,7 +1058,7 @@ extern char	 sd_buf[512];								// Puffer für eine Page
 extern ULONG asdm_test_start;
 #endif
 
-#endif // ARCHIV_SDM == 1
+#endif	// ARCHIV_SDM == 1
 
 // ***AnFre : Kaltwasser TWW *********************************************/
 extern zaehlspVolstr volstrCtr;	

@@ -771,6 +771,8 @@ AlarmVar	alarmtab[SETAB_DEFL];
 char quit_taste;
 char un_qsm;								// 1 = Unquittierte Störungen vorhanden
 char unbek_Alarm;					// unbekannter Alarm (alarmtab - Index)
+char sstm_alarme;					// Merker für Alarme, für SSTM-Relais, Eintrag in parli für KomtabCopy
+char sstm_all;						// Merker für alle Alarme inclusive Fühler, Eintrag in parli für KomtabCopy
 
 UINT alarmlist_dae[SETAB_DEFL];		// aktuelle Alarme in einer Liste merken (für RFB):  2 Byte DAE-Nummer
 char alarmanz_dae;
@@ -1043,7 +1045,7 @@ char	sd_buf[512];								// Puffer für eine Page
 ULONG asdm_test_start;
 #endif
 
-#endif
+#endif // End ARCHIV_SDM == 1
 
 
 

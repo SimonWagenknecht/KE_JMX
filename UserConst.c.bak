@@ -1,4 +1,4 @@
-eeee
+
 /*    UserConst.c															*/
 
 /*    Konstanten im Flash-Bereich des Users		*/
@@ -8,6 +8,10 @@ eeee
 #include "standdef.h"
 #include "userdef.h"
 #include "uramext.h"
+
+/* User-Compilierungszeit und Datum	*/
+const char user_compile_time[15] = __TIME__;
+const char user_compile_date[15] = __DATE__;
 
 	/* Typ und Version des gesamten Projektes												*/
 //									             				 "---------------"
@@ -30,8 +34,18 @@ const char KeViess[16]							= {"Viessmann Kask."};
 const char KesBegr[16]							= {"ANHEBUNG       "};
 const char KesAllg[16]							= {" allg.Parameter"};
 const char KesPu[16]								= {" Drehzahl      "};
-
 const char Ntmod[16]								= {"SEKUND-REGELUNG"};
+const char KesTyp[8][16]	= {
+	{"               "},
+	{"               "},
+	{"               "},
+	{"               "},
+	{" modulierend   "},
+	{" Sollwert      "},
+	{" 1-stufig      "},
+	{" 2-stufig      "},
+};	
+
 const char Hkmod_fuss[16]						= {"FUSSBODEN      "};
 
 const char Hkmod[4][16]	= {
@@ -57,6 +71,9 @@ const char DiaTN2mod[16]						= {"RL NETZ  (TN2) "};	//***AnFre Mittlere Temp. T
 const char Monatswerte[16] 					= {" Monatswerte   "};		//MBus
 
 const char Stoermeld[16]						=	{"STOERMELDUNGEN "};
+const char ModBusMasterSlave[16]		=	{"MASTER/SLAVE   "};
+const char ModBusMaster[16]					= {"MASTER         "};	
+const char ModBusSlave[16]					= {"SLAVE          "};	
 
 /***** ulsch : Heizgradtage *****/
 const char HzGrdTg[16]						  =	{"G{15} VDI3807  "};
@@ -79,127 +96,29 @@ const char c_ModulAdr               = 10;                   // 0=dummy
 const char c_StationsAdr            = 10;                   // 0=dummy
 
 // Voreinstellung Schnittstelle und Funktionen
-const char c_Mode_S1                = 0x01;									// 0xFF    = dummy,  0=Slave, 1=Master
-const char c_Mode_S2                = 0x01;									// 0xFF    = dummy,  0=Slave, 1=Master
-const char c_Mode_S3                = 0xFF;								  // 0xFF    = dummy,  0=Slave, 1=Master
-const UINT c_Baudrate_S1            = 9600;                 // 0       = dummy
-const UINT c_Baudrate_S2            = 9600;                 // 0       = dummy
-const UINT c_Baudrate_S3            = 0;                    // 0       = dummy
-const char c_Funktion_S1            = GBUS_FU;              // NULL_FU = dummy,  GBUS_FU....MODBUS1_FU...siehe projdef.h
-const char c_Funktion_S2            = MODBUS1_FU;           // NULL_FU = dummy
-const char c_Funktion_S3            = NULL_FU;              // NULL_FU = dummy
-// ***AnFre für WILO-ModBus
+const char c_Mode_S1                = NULL_MODE;            // NULL_MODE = dummy,  MASTER, SLAVE
+const UINT c_Baudrate_S1            = 0;                    // 0         = dummy,  z.B. 9600
+const char c_Funktion_S1            = NULL_FU;              // NULL_FU   = dummy,  GBUS_FU, MODBUS1_FU, MBUS1_FU, GENI1_FU...siehe projdef.h
+const char c_Parity_S1              = NULL_PARI;            // NULL_PARI = dummy,  NOPAR, EVEN, ODD 
+const char c_Stopbits_S1            = NULL_STOP;            // NULL_STOP = dummy,  1, 2 
+
+const char c_Mode_S2                = NULL_MODE;            // NULL_MODE = dummy,  MASTER, SLAVE
+const UINT c_Baudrate_S2            = 0;                    // 0         = dummy
+const char c_Funktion_S2            = NULL_FU;              // NULL_FU   = dummy   GBUS_FU, MODBUS1_FU, MBUS1_FU, GENI1_FU...siehe projdef.h
+const char c_Parity_S2              = NULL_PARI;            // NULL_PARI = dummy,  NOPAR, EVEN, ODD 
+const char c_Stopbits_S2            = NULL_STOP;            // NULL_STOP = dummy,  1, 2 
+
+const char c_Mode_S3                = NULL_MODE;            // NULL_MODE = dummy,  MASTER, SLAVE
+const UINT c_Baudrate_S3            = 0;                    // 0         = dummy
+const char c_Funktion_S3            = NULL_FU;              // NULL_FU   = dummy,  GBUS_FU, MODBUS1_FU, MBUS1_FU, GENI1_FU...siehe projdef.h
+const char c_Parity_S3              = NULL_PARI;            // NULL_PARI = dummy,  NOPAR, EVEN, ODD 
+const char c_Stopbits_S3            = NULL_STOP;            // NULL_STOP = dummy,  1, 2 
+
 const char c_ModbusBaudWilo					= 5;				// WILO Pumpenparameter "A" Achtung! immer 5 = 9600 Baud
 const char c_ModbusSioWilo					= 6;				// WILO Pumpenparameter "C" SIO-Einstellung Parität und StopBit (2, 3, 6, 10)
 //------------------------------------------------------------------------------------------
 
-//---------- Bus-Pumpen ---------
-const char * pu_operation_set[]	=
-	{	
-		"PUMPE STOP     \0",		// 0
-		"PUMPE EIN      \0",		// 1
-		"MIN-DREHZAHL   \0",		// 2
-		"MAX-DREHZAHL   \0",		// 3
-	  "Keine Antwort !\0",		// 4	***AnFre 12.12.2012
-	};
 
-const char * pu_control_set[]	=
-	{	
-		"KONSTANTDRUCK  \0",		// 0
-		"PROPORT.DRUCK  \0",		// 1
-		"KONSTANTFREQU. \0",		// 2
-		"AUTOMATIK-MODE \0",		// 3
-	  "Keine Antwort !\0",		// 4	***AnFre 12.12.2012
-	};
-
-const char ClearDisplay[] =
-	{ "               \0"};
-
-const char * pu_func_set[]	=
-	{	
-		"DEAKTIVIERT!   \0",		// 0
-		"REMOTE MODE    \0",		// 1
-		"LOCAL MODE     \0",		// 2
-	};
-
-const char * wilo_servstat_set[]	=
-	{	
-		"Keine Meldung  \0",
-		"Servicebedarf  \0",				
-		"Lager wechseln \0",				
-		"Lager fetten   \0",				
-		"Dichtung tausch\0",				
-		"Undef Meldung! \0",
-	};
-
-const char * wilo_error_set[]	=
-	{	
-		"Keine Meldung  \0",
-		"Modul-Fehler   \0",				
-		"Motor-Fehler   \0",				
-		"Nicht belegt   \0",				
-		"Pumpen-Fehler  \0",				
-		"Versorg.Spannun\0",				
-		"Undef Meldung! \0",
-	};
-
-const char * wilo_errorstat_set[]	=
-	{	
-		"Keine Meldung  \0",
-		"Unterspannung  \0",		
-		"Ueberspannung  \0",
-		"Phase fehlt    \0",
-		"Trockenlauf    \0",
-		"Druck zu hoch  \0",
-		"Druck zu niedr.\0",
-		"Nicht belegt   \0",
-		"Nicht belegt   \0",
-		"UeberTemp Motor\0",
-		"Motorfehler    \0",
-		"Blockierung    \0",
-		"UeberTemp Modul\0",
-		"Modulfe.Warnung\0",
-		"Modulfehler    \0",
-		"Sensorfehler   \0",
-		"Undef Meldung! \0",
-	};
-
-const char * wilo_pustat_set[]	=
-	{	
-		"Keine Meldung  \0",
-		"Betriebsm.  EIN\0",	
-		"Drehricht.Links\0",	
-		"Soll-Ist A.>10%\0",
-		"Extern Aus     \0",	
-		"Doppelpumpe    \0",	
-		"Lokale Bedien. \0",	
-		"Q/H nicht ermit\0",	
-		"Extern Min.    \0",	
-		"Nicht belegt   \0",
-		"Nicht belegt   \0",
-		"Nicht belegt   \0",
-		"Nicht belegt   \0",
-		"Nicht belegt   \0",
-		"Wink/Service   \0",	
-		"Undef Meldung! \0",
-	};
-
-const char * wilo_statdiag_set[]	=
-	{	
-		"Keine Meldung  \0",
-		"Pu o.Modul-Fehl\0",
-		"Versorgung Eo.H\0",
-		"Nicht belegt   \0",
-		"Untere Regelgr.\0",
-		"Obere Regelgr. \0",
-		"Nicht belegt   \0",
-		"Sollwert-Fehler\0",
-		"Nicht belegt   \0",
-		"Lokale Bedien. \0",
-		"Nicht belegt   \0",
-		"Pumpe laeuft   \0",
-		"Undef Meldung! \0",
-	};
 
 //-------------------------------
 
@@ -290,7 +209,47 @@ const char * wilo_statdiag_set[]	=
 //	#define VERS_DATUM	{16,6,8}	 // neues System 14.4.16
 // #define VERS_DATUM	{16,10,10}	 // GPRS in parli,h
 //#define VERS_DATUM	{17,4,4}			//SiWa: Neues System und neue Bezeichnungen
-#define VERS_DATUM	{17,11,1}			// SiWa: System 12.04.17, Betriebsmeldung von Puffer- und Solarpumpe korrigiert (war vertauscht)
+//#define VERS_DATUM	{17,11,1}			// SiWa: System 12.04.17, Betriebsmeldung von Puffer- und Solarpumpe korrigiert (war vertauscht)
+			
+			//VERS_DATUM Historie von Riedel Pool
+			//#define VERS_DATUM  {16,1,14}  // Josch-SDM : Neues Betriebssystem {16,1,14} mit Erweiterung IrDA als IrDA-S4 Schnittstelle (über Modul RIEcon83)
+                                 // ArchivSD.c mit Filesystem entfällt. ArchivSDM.c erweitert mit Testkommando für Prüfplatz.
+                                 // Erforderliche Änderungen sind in "R36CPool_Anpassung_160114.txt " dokumentiert.
+			//#define VERS_DATUM  {16,2,9}   // ulsch: 2 WW-Bereitungen. Geändert: SteuerWw,c, RegelWw.c, parli.h, ustruct.h, UserConst.c, uconstext.h, projdef.h, Steuer.c, RegelHk.c, Alarme.c, UserReply.c
+			  
+			//#define VERS_DATUM  {16,5,19}  // Josch: Fehler in Archiv_SDM.c korrigiert.Geändert: parli.h SYS; 88; ff.
+
+			//#define VERS_DATUM  {16,5,23}  // Software für 1 Kessel komplett neu
+			//#define VERS_DATUM  {16,6,21}  // Fehler in SteuerWw.c beseitigt: nach Speicherladung geht der Vorrang u.U.nicht zu Ende
+			
+			//#define VERS_DATUM  {16,6,29}  // Josch: Neue Implementierung Modbus (mit Pumpen (WILO_MODBUS, GENI, BELIMO), ohne Pumpen als Master oder Slave)
+			//#define VERS_DATUM  {16,7,26}	 // ulsch: Kessel-Implementierung neu
+			//#define VERS_DATUM  {16,9,29}  // AnBu: Änderung Gprs: parli.h ("work handler")
+			//#define VERS_DATUM  {16,11,9}  // Josch,Joja: Modbus-Ergänzung (StopBits, READ_MULTIPLE_COILS, ModbusExtract.c) 
+			//#define VERS_DATUM  {16,11,15} // Josch: Alarme.c, parli.h: Soft-Quittierung ohne Quittiertaste möglich.
+			//#define VERS_DATUM  {16,11,29} // Josch: DTimer.c : Erweiterung - Sende Broadcast-Uhr
+			//#define VERS_DATUM  {17,2,1}   // Josch: ArchivSDM.c: Automatische Fehlerkorrektur, betrifft: UserRam.c, uramext.h, archivsdm.h, UserReply.c, parli.h
+			//#define VERS_DATUM  {17,4,5}   // Josch: ArchivSDM.c bugfix,  parli.h Neuordnung siehe ARCHIV_SDM
+			//#define VERS_DATUM  {17,4,12}  // Josch: Neues System {17,4,12} : StationsAdresse synchronisieren mit Moduladresse.
+			                                 //        betrifft  parli.h ZLT; *20; und folgenden ( ->;) Parameter übernehmen   
+			                                 //        außerdem: Eine User-Compile-Zeit wird generiert, zu sehen in TES; *92; bis *93; 
+			//#define VERS_DATUM  {17,6,19}	 // Ulsch: 8 MBus-Zähler
+			
+			//#define VERS_DATUM  {17,6,21}  // Josch: Neues System {17,6,21} :
+                                 //        Parität und Stopbits für 3 Schnittstellen sind in UserConst.c voreinstellbar. Sichtbar in Gruppe ZLT;   
+                                 //        Deaktivierung von Sensor- und Analogeingängen möglich. Zugriff in SYS: 09;SENSOR-IN LIFE und 10;ANALOG-IN LIFE  und in R38_MODULE 055;
+                                 // AnBu:  GPRS zurück zur Version vom 29.09.2016                                                                                                  
+                                    
+			//#define VERS_DATUM  {17,8,30}  // Josch: ZLT Anzeige des Funktionsnamens. Betrifft: parli.h, UserKonv.c, uskonvform.h, UserConst.c, uconstext.h
+			                                 // JoJa:  Modbus.c: Spezialkommando WRITE_SINGLE_COIL korrigiert
+			
+			//#define VERS_DATUM  {17,9,26}  // Josch: EA-Simulation mit System {17,9,26}
+			                                 //        betrifft InOutR.c, UserRam.c .h, userdef.h, parli.h
+			//#define VERS_DATUM  {17,11,13} // Josch: R3X-Simulator mit System {17,11,1} incl. Modulkonfiguration
+			                                 //        betrifft InOutR.c, UserRam.c uramext.h
+			//#define VERS_DATUM  {18,3,14}  // Josch: ArchivSDM.c erweitert. Datenblöcke enthalten zusätzlich Archiv-Info Kennzeichen. System vom {18,3,14} erforderlich
+		
+#define VERS_DATUM	{18,03,19}			// SiWa: System 2017
 /*--------------------------------------------------------------------------------*/
 /* 										Liste von Anlagen																						*/
 /*--------------------------------------------------------------------------------*/
@@ -2001,6 +1960,19 @@ const zdname ze_dim_namen[10] = {
 }; 
 
 
+// Funktionsnamen für Schnittstellen
+const char fu_namen[9][7] = {
+	{"      "},  // #define NULL_FU         0         // keine Funktion                
+	{"GBUS  "},  // #define GBUS_FU         1         // RS485 RIEcon Gebäudebus       
+	{"FUNK  "},  // #define FUNK1_FU        2         // RS485 Funkmodul EnOcean       
+	{"GENI  "},  // #define GENI1_FU        3         // RS485 Genibus Pumpen          
+	{"MBUS  "},  // #define MBUS1_FU        4         // RS232 MBUS                    
+	{"TEST  "},  // #define GBUS1_FU        5         // RS485 Test Gebäudebus         
+	{"MODBUS"},  // #define MODBUS1_FU      6         // RS485 oder RS232 MODBUS Master
+	{"KNXBUS"},  // #define KNXBUS1_FU      7         // KNX/EIB über RIEcon66-SPL-KNX 
+	{"ANYBUS"},  // #define ANYBUS1_FU      8         // RS232 Anybus                  
+};	
+
 /* Zählerdimensionierungen für Systemstart 	(leerer EEPROM, Kaltstart 67 oder Kaltstart 99)  */
 // Stichtag 01.01.00 ( {0,1,1} ) verhindert Stichtag !
 // Stichtag ausführen : konfig Bit 4 setzen (konfig = 0x10)
@@ -2034,22 +2006,28 @@ const zaehldim ze_dimsys[20 + MBUSANZ] = {
 	{0,				0,			0,			0,		0,			0,			26,			{0,1,1},	 {0},			"UNBEKANNT      ", "               "},// ZIN26
 // MBus
 #if MBUSANZ > 0
-	{0,				0,			0,			0,		Z_KONFIG_STICHTAG,0,31,	{1,1,1},	 {0},			"UNBEKANNT      ", "               "},// MB_Z01
+	{3,				4,			0,			0,		Z_KONFIG_STICHTAG,0,31,	{1,1,1},	 {0},			"UNBEKANNT      ", "               "},// MB_Z01
 #endif
 #if MBUSANZ > 1
-	{0,				0,			0,			0,		Z_KONFIG_STICHTAG,0,32,	{1,1,1},	 {0},			"UNBEKANNT      ", "               "},// MB_Z02
+	{3,				4,			0,			0,		Z_KONFIG_STICHTAG,0,32,	{1,1,1},	 {0},			"UNBEKANNT      ", "               "},// MB_Z02
 #endif
 #if MBUSANZ > 2
-	{0,				0,			0,			0,		Z_KONFIG_STICHTAG,0,33,	{1,1,1},	 {0},			"UNBEKANNT      ", "               "},// MB_Z03
+	{3,				4,			0,			0,		Z_KONFIG_STICHTAG,0,33,	{1,1,1},	 {0},			"UNBEKANNT      ", "               "},// MB_Z03
 #endif
 #if MBUSANZ > 3
-	{0,				0,			0,			0,		Z_KONFIG_STICHTAG,0,34,	{1,1,1},	 {0},			"UNBEKANNT      ", "               "},// MB_Z04
+	{3,				4,			0,			0,		Z_KONFIG_STICHTAG,0,34,	{1,1,1},	 {0},			"UNBEKANNT      ", "               "},// MB_Z04
 #endif
 #if MBUSANZ > 4
-	{0,				0,			0,			0,		Z_KONFIG_STICHTAG,0,35, {1,1,1},	 {0},			"UNBEKANNT      ", "               "},// MB_Z05
+	{3,				4,			0,			0,		Z_KONFIG_STICHTAG,0,35, {1,1,1},	 {0},			"UNBEKANNT      ", "               "},// MB_Z05
 #endif
 #if MBUSANZ > 5
-	{0,				0,			0,			0,		Z_KONFIG_STICHTAG,0,36,	{1,1,1},	 {0},			"UNBEKANNT      ", "               "},// MB_Z06
+	{3,				4,			0,			0,		Z_KONFIG_STICHTAG,0,36,	{1,1,1},	 {0},			"UNBEKANNT      ", "               "},// MB_Z06
+#endif
+#if MBUSANZ > 6
+	{3,				4,			0,			0,		Z_KONFIG_STICHTAG,0,37,	{1,1,1},	 {0},			"UNBEKANNT      ", "               "},// MB_Z07
+#endif
+#if MBUSANZ > 7
+	{3,				4,			0,			0,		Z_KONFIG_STICHTAG,0,38,	{1,1,1},	 {0},			"UNBEKANNT      ", "               "},// MB_Z08
 #endif
 };	
 
@@ -2197,11 +2175,120 @@ const char CarTab[64] = {										//  Code:	Zeichen			in RFB
 	0x06,0x09,0x09,0x06,0x00,0x00,0x00,0x00,	//  0x06:	Grad						'°'
 	0x18,0x04,0x0C,0x04,0x18,0x00,0x00,0x00,	//  0x07:	hoch 3					'³'
 	0x00,0x04,0x0E,0x15,0x04,0x04,0x00,0x00,	//  0x00:	Pfeil hoch			'0'
-//	0x00,0x04,0x04,0x15,0x0E,0x04,0x00,0x00,	//  0x01:	Pfeil runter		'2'
-	0x18,0x04,0x28,0x10,0x3C,0x00,0x00,0x00,	//  0x01:	hoch 2					'2'
+	0x00,0x04,0x04,0x15,0x0E,0x04,0x00,0x00,	//  0x01:	Pfeil runter		'2'
 	0x10,0x18,0x1C,0x1E,0x1C,0x18,0x10,0x00,	//  0x02:	Dreieck					'4'
 	0x00,0x00,0x00,0x04,0x00,0x00,0x00,0x00		//  0x03:	Mittelpunkt			'6'
 };
+
+//---------- Bus-Pumpen --------------------------------------------------
+const char * pu_operation_set[]	=
+	{	
+		"PUMPE STOP     \0",		// 0
+		"PUMPE EIN      \0",		// 1
+		"MIN-DREHZAHL   \0",		// 2
+		"MAX-DREHZAHL   \0",		// 3
+	  "Keine Antwort !\0",		// 4	***AnFre 12.12.2012
+	};
+
+const char * pu_control_set[]	=
+	{	
+		"KONSTANTDRUCK  \0",		// 0
+		"PROPORT.DRUCK  \0",		// 1
+		"KONSTANTFREQU. \0",		// 2
+		"AUTOMATIK-MODE \0",		// 3
+	  "Keine Antwort !\0",		// 4	***AnFre 12.12.2012
+	};
+
+
+const char ClearDisplay[] =
+	{ "               \0"};
+
+const char * pu_func_set[]	=
+	{	
+		"DEAKTIVIERT!   \0",		// 0
+		"REMOTE MODE    \0",		// 1
+		"LOCAL MODE     \0",		// 2
+	};
+
+const char * wilo_servstat_set[]	=
+	{	
+		"Keine Meldung  \0",
+		"Servicebedarf  \0",				
+		"Lager wechseln \0",				
+		"Lager fetten   \0",				
+		"Dichtung tausch\0",				
+		"Undef Meldung! \0",
+	};
+
+const char * wilo_error_set[]	=
+	{	
+		"Keine Meldung  \0",
+		"Modul-Fehler   \0",				
+		"Motor-Fehler   \0",				
+		"Nicht belegt   \0",				
+		"Pumpen-Fehler  \0",				
+		"Versorg.Spannun\0",				
+		"Undef Meldung! \0",
+	};
+
+const char * wilo_errorstat_set[]	=
+	{	
+		"Keine Meldung  \0",
+		"Unterspannung  \0",		
+		"Ueberspannung  \0",
+		"Phase fehlt    \0",
+		"Trockenlauf    \0",
+		"Druck zu hoch  \0",
+		"Druck zu niedr.\0",
+		"Nicht belegt   \0",
+		"Nicht belegt   \0",
+		"UeberTemp Motor\0",
+		"Motorfehler    \0",
+		"Blockierung    \0",
+		"UeberTemp Modul\0",
+		"Modulfe.Warnung\0",
+		"Modulfehler    \0",
+		"Sensorfehler   \0",
+		"Undef Meldung! \0",
+	};
+
+const char * wilo_pustat_set[]	=
+	{	
+		"Keine Meldung  \0",
+		"Betriebsm.  EIN\0",	
+		"Drehricht.Links\0",	
+		"Soll-Ist A.>10%\0",
+		"Extern Aus     \0",	
+		"Doppelpumpe    \0",	
+		"Lokale Bedien. \0",	
+		"Q/H nicht ermit\0",	
+		"Extern Min.    \0",	
+		"Nicht belegt   \0",
+		"Nicht belegt   \0",
+		"Nicht belegt   \0",
+		"Nicht belegt   \0",
+		"Nicht belegt   \0",
+		"Wink/Service   \0",	
+		"Undef Meldung! \0",
+	};
+
+const char * wilo_statdiag_set[]	=
+	{	
+		"Keine Meldung  \0",
+		"Pu o.Modul-Fehl\0",
+		"Versorgung Eo.H\0",
+		"Nicht belegt   \0",
+		"Untere Regelgr.\0",
+		"Obere Regelgr. \0",
+		"Nicht belegt   \0",
+		"Sollwert-Fehler\0",
+		"Nicht belegt   \0",
+		"Lokale Bedien. \0",
+		"Nicht belegt   \0",
+		"Pumpe laeuft   \0",
+		"Undef Meldung! \0",
+	};
+//---------- Ende Bus-Pumpen --------------------------------------------------
 
 
 

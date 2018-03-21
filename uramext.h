@@ -6,8 +6,7 @@
 
 #include "userdef.h"
 #include "ustruct.h"
-#include "archivsdm.h"
-
+#include "archivsdm.h"	// Josch-SDM
 
 extern int k_dummy;
 extern char anz_dummy;	// ***AnFre für Solar-Anzeigetafel
@@ -17,6 +16,7 @@ extern char char_test1;
 extern char char_test2;
 extern int  int_test;
 extern mwsp *temperatur;
+extern mwsp mod_rt[2];
 
 extern int TaErsatz[12];
 extern UINT TaErsatzCtr;
@@ -201,16 +201,85 @@ extern char funk_vis;
 	extern unsigned char uc_genibus_func_test;
 #endif
 
+//----------------------------------------------------------------------------------------------------
+// Wilo-Pumpen mit MODBUS
+//--------------------------------------------------------------------------------------------------
+#if WILO_MODBUS == 1
 
-#if ( GENI || WILO )
+	extern char cWiloPuCount; // Anzeigecounter für Anzuzeigende Pumpe in parli-Anzeige
+
+	extern PuBusStandard *wiloPuBusPara;						// Modbus Struktur für Pumpenparameter (Adresse usw)
+	extern PuBusDynam *wiloPuBusData;
+
+//	extern ModBusWiloPumpen modWiloPuData; 					// Modbus Struktur für Modbustabelle (Datenanzeige und Daten holen getrennt halten!!!)
+//	extern ModBusWiloPumpen modWiloPu[BUS_PU_MAX];	// Struktur für Pumpenparamter aus Kommunikation übertragen auf die jeweiligen Wilo Pumpen 
+
+#endif	
+//----------------------------------------------------------------------------------------------------
+// Grundfos-Pumpen mit MODBUS
+//----------------------------------------------------------------------------------------------------
+#if GRUNDFOS_MODBUS == 1
+
+
+#endif
+
+//----------------------------------------------------------------------------------------------------
+// für alle Pumpen
+//----------------------------------------------------------------------------------------------------
+#if ( GENI == 1 || WILO_MODBUS == 1 || GRUNDFOS_MODBUS == 1)
 
 extern PuBusStandard BusPuPara[BUS_PU_MAX];
 extern PuBusDynam BusPuData[BUS_PU_MAX];
 extern char ssmBusPu;
 extern char ssmPuCtr;
-
 #endif
 
+//----------------------------------------------------------------------------------------------------
+// Modbus 
+//--------------------------------------------------------------------------------------------------
+#if MODBUS_UNI > 0
+
+extern unsigned int ModBusKonvertError;                  // Modbus.c  + modbusparli.h
+extern unsigned int modbusDeviceNr;                      // Modbus.c  + modbusparli.h
+extern int activeRow[3];                                 // Modbus.c  + modbusparli.h
+extern unsigned char modbusSlaveAddresses[3];            // Modbus.c  + modbusparli.h  + modbusstandard.h
+extern unsigned char modbusSioParity[3];                 // Modbus.c  + modbusparli.h  + modbusstandard.h
+extern unsigned char modbusSioStopBits[3];               // Modbus.c  + modbusparli.h  + modbusstandard.h
+extern unsigned char modbusConvertBuffer[3][256];        // Modbus.c   
+
+extern unsigned char modbusDeviceAddresses[];            // (nicht im UserRam.c) Modbus.c  + ModbusTabelle.c + modbusparli.h  + modbusstandard.h 
+extern modbusTableRowMasterData modbusTableData[];       // (nicht im UserRam.c) Modbus.c  + ModbusTabelle.c
+extern modbusTableRowSlaveData modbusSlaveTableData[];   // (nicht im UserRam.c) Modbus.c  + ModbusTabelle.c
+
+extern char modb_leng_tx[3];                             // ModBusSio.c
+extern char modb_rts_prescaler[3];                       // ModBusSio.c
+extern char modb_rts_timer[3];                           // ModBusSio.c
+extern char modb_rx_buff_size;                           // ModBusSio.c
+extern char modb_rx_status;                              // Modbus.c                   
+extern char modb_tx_count[3];                            // ModBusSio.c
+extern char modb_rx_count[3];                            // ModBusSio.c              
+extern char modb_rx_buffer_ready[3];                     // ModBusSio.c              
+extern char modb_rx_int_state[3];                        // ModBusSio.c              
+extern char modb_sio_errorflag[3];                       // ModBusSio.c
+extern unsigned int EoF_timer[3];                        // ModBusSio.c
+extern char timer_function[3];                           // ModBusSio.c
+extern char func_code[3];                                // ModBusSio.c  + Modbus.c  
+extern unsigned char byte_count_or_exception[3];         // ModBusSio.c  + Modbus.c
+extern unsigned int first_reg[3];                        // ModBusSio.c  + Modbus.c  
+extern unsigned int cnt_regs[3];                         // ModBusSio.c  + Modbus.c  
+extern void* reg_address[3];                             // ModBusSio.c  + Modbus.c
+extern char modb_curr_adr[3];                            // ModBusSio.c  + Modbus.c  
+
+/*--------------- Modbus-Datenpunkte -----------------------------*/
+#if MODBUS_EXT > 0       // bei Verwendung von READ_MULTIPLE_COILS in der ModbusTabelle
+extern ULONG ul_dig32[];                      // READ_MULTIPLE_COILS für 32 Bit
+extern char  uc_dig[];                        // Extraktion 32 Bit auf Einzelbytes im Task ModbusExtract
+extern char  uc_dig8[];										 		// Extraktion 32 Bit auf 4 * 8 Bit
+#endif
+
+#endif  // MODBUS_UNI
+
+//----------------------------------------------------------------------------------------------------
 
 #if ( ((IMPLEMENT_S1 & MODBUS1_IMPL) == MODBUS1_IMPL) || ((IMPLEMENT_S2 & MODBUS1_IMPL) == MODBUS1_IMPL) || ((IMPLEMENT_S3 & MODBUS1_IMPL) == MODBUS1_IMPL) )
 // Für Modbus
@@ -312,11 +381,11 @@ extern char n33text[R33_MODMAX][6][21];					//  6 Digitalausgänge			R33
 
 //Sichtbarkeitsspeicher für Parametergruppen
 extern	char	anl_vis;		// Anlage
-extern	char	ke_vis[];		// Kessel
-extern	char	hk_vis[];		// Heizung
-extern	char	ww_vis[];		// Warmwasser
-extern  char	nt_vis[];		// Netztrennung
-extern	char	so_vis[];		// Solar
+extern	char	ke_vis[KEMAX];		// Kessel
+extern	char	hk_vis[HKMAX];		// Heizung
+extern	char	ww_vis[WWMAX];		// Warmwasser
+extern  char	nt_vis[NTMAX];		// Netztrennung
+extern	char	so_vis[SOMAX];		// Solar
 extern	char	hkSoL_vis[];	// Solare Heizung ***AnFre
 
 // #####ulsch
@@ -448,6 +517,8 @@ extern int TaeSkalMin;
 extern int TaeSkalMax;
 #endif
 
+extern mwsp **aepadr;							// Arbeitsspeicher
+
 #if TAA_ANZ == 1
 extern int TaaSkalMin;
 extern int TaaSkalMax;
@@ -484,6 +555,7 @@ extern dinpsp	*DRMAXNT[];				// Max-Druck NT
 extern dinpsp	*DRMASNT[];				// Max-Druck NT sek.
 extern dinpsp	*DRMISNT[];				// Min-Druck NT sek.
 extern dinpsp	*RVZUNT[];				// RM Ventil ZU NT
+extern dinpsp	*BMPUNT[];				// Betriebsmeldung Hauptpumpe
 extern dinpsp	*SAMAL[];					// Sammelstörmeldung allgemein
 extern dinpsp	*PUWTAL[];				// Stoermeldung Tauscherpumpe
 extern dinpsp	*FRGHK[];					// Freigabe Regelung Heizkreis
@@ -503,7 +575,9 @@ extern dinpsp	*WWAUS[];			// Anlagenschalter Nichtnutzung WWB
 extern dinpsp	*QUITTS[];		// Quittierungstaste
 extern dinpsp	*SSFKE[];			// Schornsteinfegertaste
 extern dinpsp	*STBKE[];			// Sicherh.temp.wächter Kessel
+extern dinpsp	*NOTAUS[];		// Not-Aus Kessel
 extern dinpsp	*DRKE[];			// SM Max-Druck Kessel
+extern dinpsp	*BMPUKE[];		// BM Kesselpumpe
 extern dinpsp	*ADAPT_T[];		// Adaptionsmeldung "zu tief"
 extern dinpsp	*ADAPT_H[];		// Adaptionsmeldung "zu hoch"
 #if ( PUDO == 1 )
@@ -524,7 +598,7 @@ extern zaehlsp *X1ZE[6];
 // ---------------------- Zähleingänge R37_2		(Felder von Zeigern auf zaehler[i])
 extern zaehlsp *X2ZE[6];
  
-// MBus: 3 Zähler
+// MBus: 8 Zähler
 #if MBUSANZ > 0
 extern zaehlsp	mbZaehler[];								// Zähleingänge
 extern zaehlsp *MBZE[];
@@ -609,7 +683,7 @@ extern doutsp	*UVWWEA[SOMAX];			// ***AnFre 23.04.2009 Umschalt-Ventil TWW-Solar
 extern doutsp	**dopadr;					// Arbeitsspeicher
 
 //--------------------------------------------------------------
-// Speicherplätze für R37-In/Out-Modul und R38-PT1000-Modul
+// Speicherplätze für In/Out-Module
 //-------------------------------------------------------
 extern Ram37	mod37[];			// maximal 4 (dann keine weiteren Module)
 extern Ram38	mod38[];			// maximal 4 (dann keine weiteren Module)
@@ -617,9 +691,18 @@ extern Ram39	mod39[];			// maximal 4 (dann keine weiteren Module)
 extern Ram33	mod33[];			// maximal 4 (dann keine weiteren Module)
 extern char mod39sysinit;		// Merkmal für SysEEP_InitUser  (Kaltstart 66 wurde ausgeführt)	
 																	
-extern char proc_IO;									// Auftragsmerker
-extern char iocnt;										// Counter über maximal 4 Module
-extern char oready;										// Flag: wenn Output-Task abgelaufen
+extern char proc_IO;				// Auftragsmerker
+extern char iocnt;					// Counter über maximal 4 Module       (ohne EA-Simulation)
+extern char iocnt_max;			// Counter über maximal 4 Module + R66 (mit  EA-Simulation)
+extern char oready;					// Flag: wenn Output-Task abgelaufen
+// EA-Simulation
+extern char names_anford;
+extern char projekt_anford;
+extern char r37text_cnt[];
+extern char r38text_cnt[];
+extern char r39text_cnt[];
+extern char r33text_cnt[];
+extern char r66text_cnt;
 //--------------------------------------------------------------
 
 // Sammelstörmeldung für Anzeige und LT
@@ -779,12 +862,18 @@ extern char ext3SammelSM;	//Anzeige EXT 2: Sammel-Alarm KES 02.10.2012
 // ***AnFre externer SSM Bezeichnung ändern
 extern char extAlarmText[];
 
+/* Regelparameter für Benutzersteuerung mit UNI-Elementen --------*/
+extern UniStandard unis[1];
+extern UniDynam    unid[1];
+
 /*--------------- Alarmtabelle -----------------------------------*/
 extern AlarmVar	alarmtab[];
 
 extern char quit_taste;
 extern char un_qsm;							// 1 = Unquittierte Störungen vorhanden
 extern char unbek_Alarm;				// unbekannter Alarm (alarmtab - Index)
+extern char sstm_alarme;				// Merker für Alarme, für SSTM-Relais, Eintrag in parli für KomtabCopy
+extern char sstm_all;						// Merker für alle Alarme inclusive Fühler, Eintrag in parli für KomtabCopy
 
 extern UINT alarmlist_dae[];		// aktuelle Alarme in einer Liste merken (für RFB):  2 Byte DAE-Nummer
 extern char alarmanz_dae;
@@ -837,6 +926,7 @@ extern char monHzGrdAnz;
 /***** ulsch : Waermemenge, Diagnose *****/
 #if WMENG > 0
 extern zaehlspWmeng wmengCtr[];
+extern zaehlsp wmengCalc[4];		// für interne Wärmemengen-Zähler, für Zählerobjekt benötigt
 #endif
 
 #if ( LEIST_BER > 0 )
@@ -940,6 +1030,20 @@ extern int TmanfSkalMaxSpg;
  
 extern sAnaInpPara AnaInpPara[AE_UNI_ANZ];
 extern sAnaInp anaInp[AE_UNI_ANZ];
+
+#if KEANZ > 1
+extern struct sKes KesEin;
+extern struct sKes KesSperre;
+extern struct sKes KesGestoert;
+extern char KesFolgeSoll[];
+extern char KesFolgeIst[];
+extern char AnzahlKesEin;
+//extern char KesParVis[KEMAX];
+extern mwsp *VL_STRATEG;
+extern mwsp *VL_FOLGE_AUS; 
+extern mwsp *RL_FOLGE_AUS;
+extern mwsp *VL_ANHEB;
+#endif	// #if KEANZ > 1
 
 // ***** josch: Datenmanager ***************************************************************
 // Gerät im DS_Modus (Data Slave),	Auswertung in der Funktion DReply() 
@@ -1071,6 +1175,20 @@ extern ULONG lasttimeDiff;	// Zeit-Zaehler letzter Impuls 100ms
 extern UINT	CO2_Faktor;				// CO2-Faktor 0,000 [kg/kWh]
 extern ULONG	CO2_Einspar;			// CO2-Einsparung in 0 kg
 extern char	Tyfocor;					// Anteil Tyfocor in Vol.% (nur 40, 50 oder 60)
+
+#if RM_POWER_ANZ
+extern mwsp *RM_POWER[];
+extern sPowInpPara RmPowerPara[RM_POWER_ANZ];
+extern sPowInp rmPower[RM_POWER_ANZ];
+#endif
+
+#if AE_DRUCK_ANZ
+extern mwsp *AE_DRUCK[];
+extern sAnaInpPara DruckPara[AE_DRUCK_ANZ];
+extern sAnaInp druck[AE_DRUCK_ANZ];
+#endif
+
+
 
 #endif	// URAMEXT_H_INCLUDED
 

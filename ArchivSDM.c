@@ -14,6 +14,10 @@
 /*                   Kommando: WRITE_SDMEM                                        */
 /*        01.02.2017 Zeitstempel auf Gültigkeit überprüfen in check_sdtime(...)   */
 /*        05.04.2017 one_reset_dae(...) off_DP gesetzt                            */
+/*        26.09.2017 Bei Fehler: Neustart verzögern                               */
+/*                                                                                */
+/*        14.03.2018 neu: n Datenbytes + 1 Byte Archiv-Info angehangen,           */
+/*                        d.h. Offset der Datenpakete erhöht sich um 1,           */
 /*                                                                                */
 /**********************************************************************************/
 
@@ -90,7 +94,7 @@ BYTE    write_512_data_block(DWORD adr, BYTE *pData, DWORD timeout_max);
 
 void * ferro_malloc(char anz, char max);
 ULONG sdm_malloc(ULONG anz, char max);
-CRD_ERG save_data(UINT dae, char exp_idx, char exp_dae, char *folge, ARC_ERG *a_erg);
+CRD_ERG save_data(UINT dae, char exp_idx, char exp_dae, char *folge, ARC_ERG *a_erg, char state, ULONG save_time);
 CRD_ERG save_folge(ARC_ERG *a_erg, ULONG zeit);
 CRD_ERG Verify_Komtab(UINT ktleng, ARC_ERG *a_erg, int *dae_err);
 CRD_ERG Save_Komtab(UINT ktleng);
@@ -140,6 +144,7 @@ void ArchivSDM(void)
 	UINT i, j;
 	BYTE folge = 0;
 	ULONG zeit;
+	ULONG asdm_time_old = 0;
 	
 	timeout_max = 20000;     /* max. count of retry */
 
@@ -182,8 +187,14 @@ void ArchivSDM(void)
 	//------------------------------------------------------
 	// Initialisierung der Expandadressen nach Reset
 	//------------------------------------------------------
-	if(neustart == 1)
+	if(neustart > 0)
 	{
+		if(neustart > 1)	// Bei Fehler: Neustart verzögern
+		{
+			neustart--;
+			return;
+		}
+		
 		// ca. 50ms SDHC Class10
 		if(monitor_init == 0)																// Datenmonitor initialisiert ?
 		{
@@ -257,7 +268,10 @@ void ArchivSDM(void)
 		sdm_base_check = 1;
 		// Abbruch bei Fehler
 		if(a_erg != ARC_OK || c_erg != CRD_OK)
+		{
+			neustart = 50;	// Neustart erst nach 5 Sekunden wieder ausführen
 			return;
+		}
 		
 		// Datenpage lesen
 		dp_adr = SDM_INITKZ_ADR;
@@ -391,7 +405,7 @@ void ArchivSDM(void)
 			byte_anz = LzKonv(lzkonv_buf, current_dae, 0, 0);
 			dae_info[0].akt_DP = 1;											// aktuelle Datenpage-Nr.
 			dae_info[0].num_DP = 0;											// Anzahl der Einträge in der Datenpage
-			dae_info[0].off_DP = (char)(byte_anz + 4);	// Offset zum nächsten Eintrag (+4 Byte Zeitstempel)
+			dae_info[0].off_DP = (char)(byte_anz + 4 + 1);	// Offset zum nächsten Eintrag: +4 Byte Zeitstempel +1 Byte Archiv-Info (ab 14.03.2018)
 			dae_info[0].akt_VP = 1;											// aktuelle Verweispage-Nr.
 			dae_info[0].num_VP = 0;											// Anzahl der Einträge in der Verweispage
 			dae_info[0].num_HP = 0;											// Anzahl der Einträge in der Hauptpage
@@ -497,7 +511,10 @@ void ArchivSDM(void)
 							a_erg = ARC_ERR_CARD;																// Archiv-Status Fehleranzeige
 							a_erg_gl = a_erg;
 						}
-								
+						
+						// Zeitstempel im RTC-Ram setzen
+						bicbus(RTCADR,	(char	*)&LongZeit,	ASDM_TIME_ADR, 4,	BICWR);
+														
 					}	
 					else
 						werks_sdm_code = current_dae * 100;										// Anzeige in parli
@@ -561,24 +578,24 @@ void ArchivSDM(void)
 	{
 		case START:
 			#if SPEED_SAVE == 1 		// Testfunktion: permanente Speicherung mit einem DAE
-			if(test_start == 1)
-			{
-				// Testbeginn: 0x1F07E260;	= 01.04.2015 00:00	wird mit Kaltstart 56 gesetzt
-				asdm_test_start += 60;														// Addiere zur Startzeit 1 Minute
-				bicbus ( EEPADR,	(char *)&asdm_test_start,	ASDM_TEST_START_ADR, 4, BICWR);
-				asdm_time = asdm_test_start;											
-				asdm_status = SD_INIT;										
-			}
+				if(test_start == 1)
+				{
+					// Testbeginn: 0x1F07E260;	= 01.04.2015 00:00	wird mit Kaltstart 56 gesetzt
+					asdm_test_start += 60;														// Addiere zur Startzeit 1 Minute
+					bicbus ( EEPADR,	(char *)&asdm_test_start,	ASDM_TEST_START_ADR, 4, BICWR);
+					asdm_time = asdm_test_start;											
+					asdm_status = SD_INIT;										
+				}
 			#else										// normal
-			// Start im 5 Minutenraster
-			if( (((Min % 5) == 0 || Min == 0) && (asdm_minut != Min))  || test_start == 1) 
-			{
-				test_start = 0;
-
-				asdm_time  = LongZeit;													// aktuelle Zeit
-				asdm_minut = Min;																// nicht nochmal in der gleichen Minute
-				asdm_status = SD_INIT;
-			}
+				// Start im 5 Minutenraster
+				if( (((Min % 5) == 0 || Min == 0) && (asdm_minut != Min))  || test_start == 1) 
+				{
+					test_start = 0;
+	
+					asdm_time  = LongZeit;													// aktuelle Zeit
+					asdm_minut = Min;																// nicht nochmal in der gleichen Minute
+					asdm_status = SD_INIT;
+				}
 			#endif										
 			else
 			{
@@ -612,9 +629,9 @@ void ArchivSDM(void)
 			if(c_erg == CRD_OK)
 			{
 				#if SPEED_SAVE == 1 
-				current_dae = SPEED_DAE;														//  Test-Datenelement
+					current_dae = SPEED_DAE;														//  Test-Datenelement
 				#else
-				current_dae = -1;																		// 1.Datenelement Vorbereitung
+					current_dae = -1;																		// 1.Datenelement Vorbereitung
 				#endif
 
 				current_dae_exp = 0;
@@ -633,16 +650,16 @@ void ArchivSDM(void)
 
 		case CHECK_DAE:																					// Untersuchung auf veränderte Parameter
 			#if SPEED_SAVE == 1
-			if( test_start == 0 )
-				asdm_status = ENDE;
+				if( test_start == 0 )
+					asdm_status = ENDE;
 			#else
-		  if( (current_dae + 1) >= KOMTAB_LENG )
-				asdm_status = ENDE;
+			  if( (current_dae + 1) >= KOMTAB_LENG )
+					asdm_status = ENDE;
 			#endif	
 			else
 			{
 				#if SPEED_SAVE == 0
-				current_dae++;																			// aktuelle DAE
+					current_dae++;																			// aktuelle DAE
 				#endif
 			
 				a_erg    = ARC_RUN;
@@ -652,11 +669,15 @@ void ArchivSDM(void)
 				state    = monitor_tab[current_dae].state;						// in DMonitor.c (System)
 				
 				#if SPEED_SAVE == 1
-				if(state == DAE_CHANGING || state == DAE_INITIAL || state == DAE_MONITORING)
+					if(state == DAE_CHANGING || state == DAE_INITIAL || state == DAE_MONITORING)
+					{
 				#else
-				if(state == DAE_CHANGING || state == DAE_INITIAL)
+					if(state == DAE_CHANGING || state == DAE_INITIAL)
+					{
 				#endif
-					asdm_status = CHECK_VP;															// Normalparameter, Konsistenzprüfung
+						asdm_status = CHECK_VP;														// Normalparameter, Konsistenzprüfung
+					}	
+				
 				else if(state == DAE_EXPMONI)
 				{
 					asdm_status = ACTION_EXP_DAE;												// Expandparameter
@@ -676,7 +697,16 @@ void ArchivSDM(void)
 			break;	
 			
 		case SAVE_DAE:																					// Speichern Normalparameter
-			c_erg = save_data(current_dae, 0, 0, &folge, &a_erg);	// ca. 10ms
+			state    = monitor_tab[current_dae].state;						// in DMonitor.c (System)
+			if(state == DAE_INITIAL)															// nach Neuanlauf
+			{
+				bicbus(RTCADR,	(char	*)&asdm_time_old,	ASDM_TIME_ADR, 4,	BICRD);
+				if( (asdm_time - asdm_time_old) > (ULONG)300 )             // > 5 Minuten
+				{
+					c_erg = save_data(current_dae, 0, 0, &folge, &a_erg, 0, asdm_time_old);	// state == 0
+				}
+			}
+			c_erg = save_data(current_dae, 0, 0, &folge, &a_erg, state, asdm_time);	// ca. 10ms
 			if(c_erg == CRD_OK)
 			{
 				refresh_value(current_dae, 0);											// in DMonitor.c (System): oldvalue = akt.Wert , state = DAE_MONITORING
@@ -750,7 +780,16 @@ void ArchivSDM(void)
 					break;	
  				
  				case SAVE_EXP_DAE:																	// Speichern Expandparameter
- 					c_erg = save_data(current_dae, exp_index, current_dae_exp, &folge, &a_erg);
+ 					state = expmoni_tab[exp_index][current_dae_exp].state;
+					if(state == DAE_INITIAL)															// nach Neuanlauf
+					{
+						bicbus(RTCADR,	(char	*)&asdm_time_old,	ASDM_TIME_ADR, 4,	BICRD);
+						if( (asdm_time - asdm_time_old) > (ULONG)300 )             // > 5 Minuten
+						{
+							c_erg = save_data(current_dae, exp_index, current_dae_exp, &folge, &a_erg, 0, asdm_time_old);	// state == 0
+						}
+					}
+ 					c_erg = save_data(current_dae, exp_index, current_dae_exp, &folge, &a_erg, state, asdm_time);
 					if(c_erg == CRD_OK)
  					{
  						refresh_value(current_dae, current_dae_exp + 1);
@@ -808,6 +847,7 @@ void ArchivSDM(void)
  			asdm_status = START;
  			asdm_action = GET_EXP_TAB;
  			daily_init  = 0;
+ 			bicbus(RTCADR,	(char	*)&asdm_time,	ASDM_TIME_ADR, 4,	BICWR);
  			break;
 	}	
 }
@@ -1021,7 +1061,7 @@ CRD_ERG Save_ExpInfotab(void)
 //------------------------------------------------------------
 // Speichern von Parametern auf der SD-Card
 //------------------------------------------------------------
-CRD_ERG save_data(UINT dae, char exp_idx, char exp_dae, char *folge, ARC_ERG *a_erg)
+CRD_ERG save_data(UINT dae, char exp_idx, char exp_dae, char *folge, ARC_ERG *a_erg, char state, ULONG save_time)
 {
 	CRD_ERG c_erg = 0;
 
@@ -1093,7 +1133,8 @@ CRD_ERG save_data(UINT dae, char exp_idx, char exp_dae, char *folge, ARC_ERG *a_
 	dp_adr = hp_adr + vp_block + (ULONG)(akt_DP - 1) * 512;		// Adresse der Datenpage   entspr. Datenpage-Nr
 
 	// Informationsbuffer füllen
-	*(ULONG *)(asdm_buffer) = asdm_time;								// Zeitstempel ablegen
+	//--------------------------------------------------
+	*(ULONG *)(asdm_buffer) = save_time;								// Zeitstempel ablegen
 	bt_anz = LzKonv(&asdm_buffer[4], dae, 0, lz_exp);		// aktuellen Wert holen und ablegen
 	if(bt_anz == 0)
 	{
@@ -1101,6 +1142,7 @@ CRD_ERG save_data(UINT dae, char exp_idx, char exp_dae, char *folge, ARC_ERG *a_
 		 c_erg = CRD_ERR_OTHER;
 		 return c_erg;
 	}
+	asdm_buffer[4 + bt_anz] = state;										// Status des Datenelements aus DMonitor.c (System) anhängen
 
 	// Speicherplatz auf der Datenpage für den Neueintrag bestimmen 
 	//       Anzahl der Einträge * Offset 
@@ -1126,7 +1168,7 @@ CRD_ERG save_data(UINT dae, char exp_idx, char exp_dae, char *folge, ARC_ERG *a_
 		}
 		else	// nächste Datenpage
 		{
-			dp_adr = hp_adr + vp_block + (ULONG)(akt_DP - 1) * 512;						// Adresse der Datenpage   entspr. Datenpage-Nr
+			dp_adr = hp_adr + vp_block + (ULONG)(akt_DP - 1) * 512;			// Adresse der Datenpage   entspr. Datenpage-Nr
 			num_DP = 0;																									// Noch keine Einträge
 		}
 	}					
@@ -2218,10 +2260,11 @@ void ArchSDMReply(char *RsTxBuf, char *RsRxBuf, char prot)
 			// Antwort:    8 Byte ferro_info
 			//             2 Byte Ferro-Adresse
 			//             4 Byte Hauptpage-Adresse
+			//             1 Byte Archiv-Info
 			
 			dae		= *(UINT *)&RsRxBuf[2];
 			exp 	= RsRxBuf[4];
-			offs   = RsFrame(RsTxBuf, 14, RCOK, prot);							// Rahmen
+			offs   = RsFrame(RsTxBuf, 15, RCOK, prot);							// Rahmen
 			
 			// Hauptpage- und Ferro-Adresse ermitteln
 			ret = get_address(dae, exp, &ferro_adr, &hp_adr);
@@ -2236,6 +2279,8 @@ void ArchSDMReply(char *RsTxBuf, char *RsRxBuf, char prot)
 				*(UINT *)&RsTxBuf[offs] = ferro_adr;								// Ferro-Adresse
 				offs += 2;
 				*(ULONG *)&RsTxBuf[offs] = hp_adr;									// Hauptpage-Adresse
+				offs += 4;
+				RsTxBuf[offs] = 1;																	// 1 Byte Status(Archiv-Info) ab Version 14.03.2018
 			}
 			else
 				RsFrame(RsTxBuf, 0,	ERANZ, prot);													// Adress-Fehler

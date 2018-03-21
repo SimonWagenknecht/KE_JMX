@@ -11,15 +11,6 @@
 #define S2				1
 #define S3				2
 
-// Schnittstellen Eigenschaften
-#define NULL_MODE 0xFF					// dummy, (alternativ MASTER, SLAVE)
-#define NULL_PARI 0xFF          // dummy, (alternativ NOPAR, ODD, EVEN)
-#define NULL_STOP 0             // dummy, (alternativ 1, 2) 
-
-#define NOPAR     0
-#define ODD       1
-#define EVEN      2
-
 // Kennzeichen im Noinit-Rambereich
 #define RAMEX1		0x3456
 #define RAMEX			0x4567
@@ -42,7 +33,6 @@
 #define R38				2							// RIEcon 38
 #define R39				3							// RIEcon 39
 #define R33				4							// RIEcon 33
-#define R66				5							// RIEcon 66 EA-Simulation
 
 #define R3MAX			4							// maximal 4 Erweiterungsmodule möglich
 #define ZAUFMAX		28						// maximal Aufträge zum Zähler lesen
@@ -95,7 +85,6 @@
 #define EINZEL		10			// Element gehört zur Klasse Einzelalarme
 #define EREIGNIS	11			// Element gehört zur Klasse Ereignisse			(kein Sammelalarm, keine rote LED-Anzeige, keine LCD-Anzeige) 
 #define ANZEIGE		12			// Element gehört zur Klasse Anzeige			  (kein Sammelalarm, keine rote LED-Anzeige, nur   LCD-Anzeige)
-#define ANZEIGE_ROT	13			// wie ANZEIGE, aber rote LED ein
 
 //----------------------------------------------------------------------------------------------------
 // Alarm Funktionen in der parli.	Ausführung erfolgt in Alarme.c siehe void AlarmFunktion(char alfunc)
@@ -113,11 +102,6 @@
 #define EXP_WLP		33			// Expansionsgruppe WLP		in parli_wilo.h
 
 #define EXP_ZMB		34			// Expansionsgruppe ZMB		in parli_mbus.h
-#define MAX_EXP_RFS	12
-#define MAX_EXP_GBP	BUS_PU_MAX
-#define MAX_EXP_GEN	BUS_PU_MAX
-#define MAX_EXP_WLP	BUS_PU_MAX
-#define MAX_EXP_ZMB	MBUSANZ
 
 
 #define IDX0_FELD	99			// Kennzeichen für die Funktion get_feldadresse(...).
@@ -149,8 +133,8 @@
 					08 = Speicher 1 Temp			TWW1L			2	oberer Fühler
 					09 = Speicher 2 Temp			TWW2L			2 unterer Fühler
 					0A = Temp.								TWWV			2
-					0B = Kesselvorlauf				TVKE			8
-					0C = Kesselrücklauf				TRKE			8
+					0B = Kesselvorlauf				TVKE			2
+					0C = Kesselrücklauf				TRKE			2
 					0D = Vorlauf Sek.(Netztr.)TVSEK			2
 ##### ulsch
 					0E = univ.Temp.fuehler		TP_UNI		8	nur zur Anzeige, keine weiteren Funktionen !	
@@ -192,8 +176,6 @@
 					02 = univ.Analogeingang		AE_UNI		8	nur zur Anzeige oder mit projektspez. Funktion, ohne Funktion im Pool !					
 					03 = Adaptions-Kennwert		ADAPT			4
 					04 = Außentemperatur			TAE				4
-					05 = Leistungs-Analogeingang RM_POW	8	insbesondere für Kessel					
-					06 = Druck-Analogeingang 	AE_DRU		8	insbesondere für Kessel					
 					...
 					
 	Klasse:	Digitaleingänge											reservierte Speicherplätze
@@ -244,10 +226,11 @@
 					2A = Digitaleingang				DRMASNT		4		Max-Druck NT sek.
 					2B = Digitaleingang				DRMISNT		4		Min-Druck NT sek.
 					2C = Digitaleingang				RVZUNT		4		RM Ventil ZU NT
-					2D = Digitaleingang				PUALNT		4		Störmeldung Hauptpumpe
-					2E = Digitaleingang				BMPUNT		4		Betriebsmeldung Hauptpumpe
-					2F = Digitaleingang				NTAUSKE		4		Not-Aus Kessel
+					2D = Digitaleingang				PUALNT		4		Störmeldung Netz-Pumpe
+					2E = Digitaleingang				BMPUNT		4		Betriebsmeldung Netz-Pumpe
 					...	
+***AnFre
+					30 = Digitaleingang				BMPUSOL		1		Betriebsmeldung Solarkreis-Pumpe
 					31 = Digitaleingang				BMPUKE		1		Betriebsmeldung Kessel/Zubringer-Pumpe
 					32 = Digitaleingang				BMPUPUF		2		Betriebsmeldung Pufferkreis-Pumpe
 					
@@ -372,21 +355,9 @@
 
 #define TVKE1			0x10B1
 #define TVKE2			0x10B2
-#define TVKE3			0x10B3
-#define TVKE4			0x10B4
-#define TVKE5			0x10B5
-#define TVKE6			0x10B6
-#define TVKE7			0x10B7
-#define TVKE8			0x10B8
 
 #define TRKE1			0x10C1
 #define TRKE2			0x10C2
-#define TRKE3			0x10C3
-#define TRKE4			0x10C4
-#define TRKE5			0x10C5
-#define TRKE6			0x10C6
-#define TRKE7			0x10C7
-#define TRKE8			0x10C8
 
 #define TVSEK1		0x10D1
 #define TVSEK2		0x10D2
@@ -488,24 +459,6 @@
 
 #define TAE1			0x2041
 
-#define RM_POW1		0x2051
-#define RM_POW2		0x2052
-#define RM_POW3		0x2053
-#define RM_POW4		0x2054
-#define RM_POW5		0x2055
-#define RM_POW6		0x2056
-#define RM_POW7		0x2057
-#define RM_POW8		0x2058
-
-#define AE_DRU1		0x2061
-#define AE_DRU2		0x2062
-#define AE_DRU3		0x2063
-#define AE_DRU4		0x2064
-#define AE_DRU5		0x2065
-#define AE_DRU6		0x2066
-#define AE_DRU7		0x2067
-#define AE_DRU8		0x2068
-
 //-------------------------------------------
 // Digitaleingänge
 //-------------------------------------------
@@ -534,30 +487,12 @@
 
 #define KEAL1			0x3071					// Störmeldung Kessel (Si-Kette)
 #define KEAL2			0x3072
-#define KEAL3			0x3073
-#define KEAL4			0x3074
-#define KEAL5			0x3075
-#define KEAL6			0x3076
-#define KEAL7			0x3077
-#define KEAL8			0x3078
 
 #define BRAL1			0x3081					// Störmeldung Brenner
 #define BRAL2			0x3082
-#define BRAL3			0x3083
-#define BRAL4			0x3084
-#define BRAL5			0x3085
-#define BRAL6			0x3086
-#define BRAL7			0x3087
-#define BRAL8			0x3088
 
 #define NACHSP1		0x3091					// Störmeldung Nachspeisung
 #define NACHSP2		0x3092
-#define NACHSP3		0x3093
-#define NACHSP4		0x3094
-#define NACHSP5		0x3095
-#define NACHSP6		0x3096
-#define NACHSP7		0x3097
-#define NACHSP8		0x3098
 
 #define PUAL1			0x30A1					// Störmeldung Heizungspumpe
 #define PUAL2			0x30A2
@@ -575,12 +510,6 @@
 
 #define BMKES1		0x30E1					// Betriebsmeldung Kessel
 #define BMKES2		0x30E2
-#define BMKES3		0x30E3
-#define BMKES4		0x30E4
-#define BMKES5		0x30E5
-#define BMKES6		0x30E6
-#define BMKES7		0x30E7
-#define BMKES8		0x30E8
 
 #define PUSAMAL1	0x30F1					// Sammelstörmeldung Pumpen
 #define PUSAMAL2	0x30F2
@@ -613,12 +542,6 @@
 
 #define PUKEAL1		0x3161					// Störmeldung Kesselpumpe
 #define PUKEAL2		0x3162
-#define PUKEAL3		0x3163
-#define PUKEAL4		0x3164
-#define PUKEAL5		0x3165
-#define PUKEAL6		0x3166
-#define PUKEAL7		0x3167
-#define PUKEAL8		0x3168
 
 #define BMPU1			0x3171					// Betriebsmeldung Heizungspumpe				
 #define BMPU2			0x3172
@@ -646,33 +569,15 @@
 
 #define	SSFKE1		0x31E1					// Schornsteinfeger-Taste
 #define	SSFKE2		0x31E2
-#define	SSFKE3		0x31E3
-#define	SSFKE4		0x31E4
-#define	SSFKE5		0x31E5
-#define	SSFKE6		0x31E6
-#define	SSFKE7		0x31E7
-#define	SSFKE8		0x31E8
 
 #define STWNT1		0x31F1					// Sicherh.temp.wächter Netztrennung
 #define STWNT2		0x31F2
 
 #define STBKE1		0x3201					// Sicherh.temp.begrenzer Kessel
 #define STBKE2		0x3202
-#define STBKE3		0x3203
-#define STBKE4		0x3204
-#define STBKE5		0x3205
-#define STBKE6		0x3206
-#define STBKE7		0x3207
-#define STBKE8		0x3208
 
 #define DRKE1			0x3211					// Max-Druck Kessel
 #define DRKE2			0x3212
-#define DRKE3			0x3213
-#define DRKE4			0x3214
-#define DRKE5			0x3215
-#define DRKE6			0x3216
-#define DRKE7			0x3217
-#define DRKE8			0x3218
 
 #define PUDAL1		0x3221					// Störmeldung Heizungspumpe, 2.Pumpe bei Doppelpumpe
 #define PUDAL2		0x3222

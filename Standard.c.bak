@@ -49,8 +49,8 @@ const bicvec bicuser[]	=	{
 	{EEPADR,	(char	*)&Klima,			KLIMA_ADR,			1, 	0},		// Klimaschutz ein/aus
 	{EEPADR,	(char	*)&DTKlima,		DTKLIMA_ADR,		2, 	50},	// Absenkung bei Klimaschutz [K] * 10
 
-#if ARCHIV_SD == 1
-	{EEPADR,	(char	*)&Archiv_frist,	ARCHIV_FRIST_ADR,	1, 	3},		// 3 Jahre
+#if ARCHIV_SDM == 1		// Josch-SDM : Archiv mit SD-Card-Memory
+	{EEPADR,	(char	*)&sdm_arch_stop,	SDM_ARCH_STOP_ADR,	1, 	0},	// 1 = Benutzer-Stopp
 #endif
 
 

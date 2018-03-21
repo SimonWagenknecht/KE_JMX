@@ -269,7 +269,7 @@
 #endif
 
 //------------------ AnalogEA	: Skalierung und Dämpfung der 0-10V Eingänge  ------------
-#if ANALOG_AE > 0
+#if ( ANALOG_AE || RM_POWER_ANZ || AE_DRUCK_ANZ )
 #define	U22_STAT		0x00
 #define U22_BICB		NOIC
 #define	U22_ZAEHL		83								// 2,075 s Startverzögerung				
@@ -335,19 +335,36 @@
 #define	U25_TASK		Leer
 #endif
 
-//----------------- Reserve --------------------------------------------------------------
+//------------------ Extrahieren von Modbus-Bitfeldern -----------------------------
+#if (MODBUS_UNI > 0) && (MODBUS_EXT == 1)
+#define	U26_STAT		0x00					
+#define U26_BICB		NOIC
+#define	U26_ZAEHL		46
+#define	U26_ZEITG		40
+#define	U26_TASK		ModbusExtract
+#else
 #define	U26_STAT		0x80					
 #define U26_BICB		NOIC
 #define	U26_ZAEHL		4
 #define	U26_ZEITG		4
 #define	U26_TASK		Leer
+#endif
 
-#define	U27_STAT		0x80					
-#define U27_BICB		NOIC
-#define	U27_ZAEHL		4
-#define	U27_ZEITG		4
-#define	U27_TASK		Leer
-
+////----------------- Wilo Pumpen  Riedel Pool--------------------------------------------------------------
+//#if WILO_MODBUS == 1
+//#define	U27_STAT		0x00					
+//#define U27_BICB		NOIC
+//#define	U27_ZAEHL		405						// 10,075 Sek Startverzögerung
+//#define	U27_ZEITG		40						// 1 s
+//#define	U27_TASK		WiloPumpenSteuerung
+//#else
+//#define	U27_STAT		0x80					
+//#define U27_BICB		NOIC
+//#define	U27_ZAEHL		4
+//#define	U27_ZEITG		4
+//#define	U27_TASK		Leer
+//#endif	
+//----------------- Reserve --------------------------------------------------------------
 #define	U28_STAT		0x80					
 #define U28_BICB		NOIC
 #define	U28_ZAEHL		4
@@ -361,12 +378,12 @@
 #define	U29_TASK		Leer
 
 //------------------ letzter Task: Archivierung mit SD-Card ------------------------------
-#if ARCHIV_SD == 1
+#if ARCHIV_SDM == 1	//...........Josch-SDM : Archiv mit SD-Card-Memory
 #define	U30_STAT		0x00					
-#define U30_BICB		NOIC
-#define	U30_ZAEHL		80
-#define	U30_ZEITG		10
-#define	U30_TASK		ArchivSD
+#define U30_BICB		XICB|SPIB
+#define	U30_ZAEHL		400					// 10 sec Startverzoegerung
+#define	U30_ZEITG		4						// 100 ms
+#define	U30_TASK		ArchivSDM
 #else
 #define	U30_STAT		0x80					
 #define U30_BICB		NOIC
