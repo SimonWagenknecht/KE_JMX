@@ -96,15 +96,15 @@ const char c_ModulAdr               = 10;                   // 0=dummy
 const char c_StationsAdr            = 10;                   // 0=dummy
 
 // Voreinstellung Schnittstelle und Funktionen
-const char c_Mode_S1                = NULL_MODE;            // NULL_MODE = dummy,  MASTER, SLAVE
-const UINT c_Baudrate_S1            = 0;                    // 0         = dummy,  z.B. 9600
-const char c_Funktion_S1            = NULL_FU;              // NULL_FU   = dummy,  GBUS_FU, MODBUS1_FU, MBUS1_FU, GENI1_FU...siehe projdef.h
+const char c_Mode_S1                = MASTER;            // NULL_MODE = dummy,  MASTER, SLAVE
+const UINT c_Baudrate_S1            = 9600;                    // 0         = dummy,  z.B. 9600
+const char c_Funktion_S1            = GBUS_FU;              // NULL_FU   = dummy,  GBUS_FU, MODBUS1_FU, MBUS1_FU, GENI1_FU...siehe projdef.h
 const char c_Parity_S1              = NULL_PARI;            // NULL_PARI = dummy,  NOPAR, EVEN, ODD 
 const char c_Stopbits_S1            = NULL_STOP;            // NULL_STOP = dummy,  1, 2 
 
-const char c_Mode_S2                = NULL_MODE;            // NULL_MODE = dummy,  MASTER, SLAVE
-const UINT c_Baudrate_S2            = 0;                    // 0         = dummy
-const char c_Funktion_S2            = NULL_FU;              // NULL_FU   = dummy   GBUS_FU, MODBUS1_FU, MBUS1_FU, GENI1_FU...siehe projdef.h
+const char c_Mode_S2                = MASTER;            // NULL_MODE = dummy,  MASTER, SLAVE
+const UINT c_Baudrate_S2            = 9600;                    // 0         = dummy
+const char c_Funktion_S2            = MODBUS1_FU;              // NULL_FU   = dummy   GBUS_FU, MODBUS1_FU, MBUS1_FU, GENI1_FU...siehe projdef.h
 const char c_Parity_S2              = NULL_PARI;            // NULL_PARI = dummy,  NOPAR, EVEN, ODD 
 const char c_Stopbits_S2            = NULL_STOP;            // NULL_STOP = dummy,  1, 2 
 
@@ -2151,6 +2151,140 @@ const sAnaInpPara AnaInpStandardPara[] = {
 		0,					// OGW
 		0},					// Hysterese Grenzwerte 	
 };
+
+#if RM_POWER_ANZ
+const sPowInpPara RmPowerStandardPara[] = {
+								// RM_POW1
+	 {20,					// Skalierung 0 % = 2,0 V
+		1000,				// Skalierung 10,0 V = 100,0 %
+		10},				// Filterzeitkonstante [s]		
+#if RM_POWER_ANZ > 1
+								// RM_POW2 : 
+	 {20,					// Skalierung 0 % = 2,0 V
+		1000,				// Skalierung 10,0 V = 100,0 %
+		10},				// Filterzeitkonstante [s]		
+#endif
+#if RM_POWER_ANZ > 2
+								// RM_POW3 : 
+	 {0,					// Skalierung 0 % = 0,00 V
+		1000,				// Skalierung 10,0 V = 100,0 %
+		10},				// Filterzeitkonstante [s]		
+#endif
+#if RM_POWER_ANZ > 3
+								// RM_POW4 : 
+	 {0,					// Skalierung 0 % = 0,00 V
+		1000,				// Skalierung 10,0 V = 100,0 %
+		10},				// Filterzeitkonstante [s]		
+#endif
+#if RM_POWER_ANZ > 4
+								// RM_POW5 : 
+	 {0,					// Skalierung 0 % = 0,00 V
+		1000,				// Skalierung 10,0 V = 100,0 %
+		10},				// Filterzeitkonstante [s]		
+#endif
+#if RM_POWER_ANZ > 5
+								// RM_POW6 : 
+	 {0,					// Skalierung 0 % = 0,00 V
+		1000,				// Skalierung 10,0 V = 100,0 %
+		10},				// Filterzeitkonstante [s]		
+#endif
+#if RM_POWER_ANZ > 6
+								// RM_POW7 : 
+	 {0,					// Skalierung 0 % = 0,00 V
+		1000,				// Skalierung 10,0 V = 100,0 %
+		10},				// Filterzeitkonstante [s]		
+#endif
+#if RM_POWER_ANZ > 7
+								// RM_POW8 : 
+	 {0,					// Skalierung 0 % = 0,00 V
+		1000,				// Skalierung 10,0 V = 100,0 %
+		10},				// Filterzeitkonstante [s]		
+#endif
+};
+#endif
+
+#if AE_DRUCK_ANZ
+const sAnaInpPara DruckStandardPara[] = {
+// Beispiel: Druck Rücklauf Anlage: 0 bar = 2,0 V, 10 V = 6,00 bar
+//	 {20					// Skalierung 0 bar = 2,0 V
+//		600,				// Skalierung 10 V = 6,00 bar
+//		10,					// Filterzeitkonstante [s]		
+//		200,				// UGW	2,00 bar
+//		000,				// OGW	kein OGW
+//		20},				// Hysterese Grenzwerte 0,20 bar
+
+								// AE_DRU1
+	 {00,					// Skalierung 0 bar = 2,0 V
+		1600,				// Skalierung 10 V = 6,00 bar
+		10,					// Filterzeitkonstante [s]		
+		100,				// UGW = 2,00 bar
+		300,				// OGW = 3,00 bar
+		20},				// Hysterese Grenzwerte 0,20 bar	
+#if AE_DRUCK_ANZ > 1
+								// AE_DRU2 : 
+	 {00,					// Skalierung 0 bar = 2,0 V
+		1600,				// Skalierung 10 V = 6,00 bar
+		10,					// Filterzeitkonstante [s]		
+		100,				// UGW = 2,00 bar
+		300,				// OGW = 3,0 bar
+		20},				// Hysterese Grenzwerte 0,20 bar	
+#endif
+#if AE_DRUCK_ANZ > 2
+								// AE_DRU3 : 
+	 {00,					// Skalierung 0 bar = 2,0 V
+		1600,				// Skalierung 10 V = 6,00 bar
+		10,					// Filterzeitkonstante [s]		
+		100,				// UGW = 2,00 bar
+		300,				// OGW = 3,00 bar
+		20},				// Hysterese Grenzwerte 0,20 bar	
+#endif
+#if AE_DRUCK_ANZ > 3
+								// AE_DRU4 : 
+	 {00,					// Skalierung 0 bar = 2,0 V
+		1600,				// Skalierung 10 V = 6,00 bar
+		10,					// Filterzeitkonstante [s]		
+		100,				// UGW = 2,00 bar
+		300,				// OGW = 3,00 bar
+		20},				// Hysterese Grenzwerte 0,20 bar		
+#endif
+#if AE_DRUCK_ANZ > 4
+								// AE_DRU5 : 
+	 {00,					// Skalierung 0 bar = 2,0 V
+		1600,				// Skalierung 10 V = 6,00 bar
+		10,					// Filterzeitkonstante [s]		
+		100,				// UGW = 2,00 bar
+		300,				// OGW = 3,00 bar
+		20},				// Hysterese Grenzwerte 0,20 bar	
+#endif
+#if AE_DRUCK_ANZ > 5
+								// AE_DRU6 : 
+	 {00,					// Skalierung 0 bar = 2,0 V
+		1600,				// Skalierung 10 V = 6,00 bar
+		10,					// Filterzeitkonstante [s]		
+		100,				// UGW = 2,00 bar
+		300,				// OGW = 3,00 bar
+		20},				// Hysterese Grenzwerte 0,20 bar		
+#endif
+#if AE_DRUCK_ANZ > 6
+								// AE_DRU7 : 
+	 {00,					// Skalierung 0 bar = 2,0 V
+		1600,				// Skalierung 10 V = 6,00 bar
+		10,					// Filterzeitkonstante [s]		
+		100,				// UGW = 2,00 bar
+		300,				// OGW = 3,00 bar
+		20},				// Hysterese Grenzwerte 0,20 bar	
+#endif
+#if AE_DRUCK_ANZ > 7
+								// AE_DRU8 : 
+	 {00,					// Skalierung 0 bar = 2,0 V
+		1600,				// Skalierung 10 V = 6,00 bar
+		10,					// Filterzeitkonstante [s]		
+		100,				// UGW = 2,00 bar
+		300,				// OGW = 3,00 bar
+		20},				// Hysterese Grenzwerte 0,20 bar		
+#endif
+};
+#endif
 
 /*----------------------------------------------------------------------------------*/
 

@@ -40,13 +40,13 @@ const Pgrup anl[] = {
 	#include "parli_Copy.h"
 	
 	#if TVP_ANL == 1
-	{"*10:"," VORLAUF   PRIM."," C    ", P&TVP[ANL],						 	ANA_FORMP, 1, P&vis,		V1, 0, 0},
-	{"*10:"," VORLAUF   PRIM."," C    ", P&TVP[ANL],					 ANA_FORMP, 0x81, P&kom,		E1, FUEHLER, 0},
+	{"*10:"," VORLAUF   PRIM."," C    ", P&TVP[ANL],						 	ANA_FORMP, 1, P&vis,		V0, 0, 0},
+	{"*10:"," VORLAUF   PRIM."," C    ", P&TVP[ANL],					 ANA_FORMP, 0x81, P&kom,		V0, FUEHLER, 0},
 	#endif
 
 	#if TRP_ANL == 1
-	{"*11:"," RUECKLAUF PRIM."," C    ", P&TRP[ANL],							 ANA_FORMP, 1, P&vis,		V1, 0, 0},      
-	{"*11:"," RUECKLAUF PRIM."," C    ", P&TRP[ANL],						ANA_FORMP, 0x81, P&kom,		E1, FUEHLER, 0},
+	{"*11:"," RUECKLAUF PRIM."," C    ", P&TRP[ANL],							 ANA_FORMP, 1, P&vis,		V0, 0, 0},      
+	{"*11:"," RUECKLAUF PRIM."," C    ", P&TRP[ANL],						ANA_FORMP, 0x81, P&kom,		V0, FUEHLER, 0},
 	#endif
 
 	#if TAE_ANZ == 1
@@ -210,6 +210,14 @@ const Pgrup anl[] = {
 	{"*94:"," SSTM PUMPENBUS?","       ", P&ssmBusPu,			  		JANEIN_FORM, 0, P&vis,		A1, EINZEL, 0},
 	{".->;"," sstm pubus ctr "," min/2 ", P&ssmPuCtr,						 		US_CHAR, 0, P&hid2,		V0, 0, 0},
 	#endif
+	
+	// AnFre 17.11.2011 02.10.2012 ge?ndert !!!
+	{"*95:"," SSM EXT.1 HKV ?","       ", P&ext1SammelSM,				 JANEIN_FORM, 0, P&vis,		A1, EINZEL, 0},
+	{"*96:"," SSM EXT.2 WPU ?","       ", P&ext2SammelSM,				 JANEIN_FORM, 0, P&vis,		A1, EINZEL, 0},
+	{"*97:"," SSM EXT.3 KES ?","       ", P&ext3SammelSM,				 JANEIN_FORM, 0, P&vis,		A1, EINZEL, 0},
+	{"*->:"," EXTERNE SSM ?  ","       ", P&SAMAL[ANL], 		 	 JANEIN_FORMIP, 0, P&vis,		A1, EINZEL, 0},
+ 	{"_->."," SSM-Bezeichnung","       ", (char*)(EXTALARMTEXT_ADR),	EEP_ASCII_FORM, 15, P&hid2,	V0, 0, 0},
+
 	
 	{"*98."," BELEGUNG DER   ","       ", P&Ein_Ausg,						ASCII_FORM, 0, P&hid2,		V0, 0, 0},
 	{"+->."," EINGANG  IN1   ","       ", P&nlist[0],					EA_NAME_FORM, 0, P&hid2,		V0, 0, 0},
@@ -658,16 +666,6 @@ const Pgrup ww1[] = {
 //
 //}; 
 
-/*------------------------------ Diagnose --------------------------------------------------*/
-#if DIAG == 1
-	#include "parli_Dia_TH2.h"
-#endif
-
-/*----------------------- Quittierbare Gespeicherte Störmeldungen ---------------------------*/
-
-#if QUIT_TASTE == 1
-	#include "qsm.h"
-#endif
 
 /*------------------------------ Alarmkontrolle ----------------------------------------*/
 const Pgrup alk[] = {
@@ -713,6 +711,11 @@ const Pgrup lbg[] = {
  {"*15:"," DAUER BEGRENZ. "," min   ", P&DauerBegrenzung,	 			 	 	 		US_INT, 0, P&vis,	 V1, 0, 0},
 
 };
+#endif
+
+/*------------------------------ Diagnose --------------------------------------------------*/
+#if DIAG == 1
+	#include "parli_Dia_TH2.h"
 #endif
 
 // Diagnose aus dem Riedel-Pool

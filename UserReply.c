@@ -1640,20 +1640,32 @@ char* get_feldadresse(char *wert, unsigned char ucExp_num, unsigned char ucAttr,
 
 	#endif
 
-// Wilopumpen mit Modbus
-	#if WILO_MODBUS == 1
 
-		if ( cWiloPuCount == 0 )
-			cWiloPuCount = 1;
-		else if ( cWiloPuCount > BUS_PU_MAX )
-			cWiloPuCount = BUS_PU_MAX;
+
+// Wilopumpen mit Modbus -- Riedel Pool
+	#if WILO_MODBUS == 1
+	
+	// ------Frenzel-Wilo
+			if ( SerialDeviceNr == 0 )
+			SerialDeviceNr = 1;
+		else if ( SerialDeviceNr > BUS_PU_MAX )
+			SerialDeviceNr = BUS_PU_MAX;
+	// ------ende Frenzel-Wilo
+	
+//	// --------Wilo- Riedel Pool
+//		if ( cWiloPuCount == 0 )
+//			cWiloPuCount = 1;
+//		else if ( cWiloPuCount > BUS_PU_MAX )
+//			cWiloPuCount = BUS_PU_MAX;
+//	// --------Wilo- Riedel Pool
 	
 		if ( ucExp_num_wilo == 0 )
 		{
 			if(alfunc == IDX0_FELD)
 				ucExp_num_wilo = 1;
 			else			
-				ucExp_num_wilo = cWiloPuCount;
+				ucExp_num_wilo = SerialDeviceNr; // Frenzel-Wilo
+				//ucExp_num_wilo = cWiloPuCount;	// Wilo Riedel Pool	
 		}		
 		else if ( ucExp_num_wilo > BUS_PU_MAX )
 			ucExp_num_wilo = BUS_PU_MAX;
@@ -4035,6 +4047,13 @@ void fill_alarmtab(char idx, char alclass_num)
 				alarmtab[idx].Waitlimit		=  1;
 				break;
 			
+			case ANZEIGE_ROT:
+				alarmtab[idx].Maske				=  1;
+				alarmtab[idx].Visloader		=  5;			// Anzeigezeit in Sek. für die LCD-Anzeige	
+				alarmtab[idx].Ledfunc			=  1;			// Rote Led ein
+				alarmtab[idx].Waitlimit		=  1;
+				break;
+
 			default:															// Alle Alarme, die zu einer Sammelalarmgruppe gehören sowie alle Einzelalarme
 				alarmtab[idx].Maske				=  1;
 				alarmtab[idx].Visloader		=  5;			// 5 Sekunden Anzeige

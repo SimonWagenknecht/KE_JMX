@@ -37,7 +37,7 @@ const bicvec bicuser[]	=	{
 	
 	// Steuer
 	{EEPADR,	(char	*)&Ta1mzk,		TA1MZK_ADR,			1, 	 10},	// [min]
-	{EEPADR,	(char	*)&Ta1mhzk,		TA1MHZK_ADR,		1, 	 	6},	// [h]	***AnFre
+	{EEPADR,	(char	*)&Ta1mhzk,		TA1MHZK_ADR,		1, 	 12},	// [h]
 	{EEPADR,	(char	*)&bc_vorra,	BC_VORRA_ADR,		1, 	  0},	// 
 
 	{EEPADR,	(char	*)&Schalt_Pause, SCHALT_PAUSE_ADR,	1, 3},	// 3 Sek Einschaltpause
@@ -117,6 +117,11 @@ const char BICUSERZ =  sizeof(bicuser) / sizeof(bicvec) ;
 const bicvec bicuser1[]	=	{
 	{EEPADR,	(char	*)&k_dummy,					K_DUMMY_ADR,		2},
 
+#if SPEED_SAVE == 1			// Josch-SDM
+	{EEPADR,	(char	*)&asdm_test_start,	ASDM_TEST_START_ADR, 4},
+#endif	
+
+
 // ***** josch: Datenmanager
 #if DM_MODE == 1
 	{EEPADR,	(char	*)&Slave[0],				SLAVE_ADR,		4},
@@ -125,6 +130,15 @@ const bicvec bicuser1[]	=	{
 #if ANALOG_AE > 0
 	{EEPADR,	(char	*)&AnaInpPara[0],		ANAINPPARA_ADR, 		( ( sizeof(AnaInpPara) > 64 ) ? 64 : sizeof(AnaInpPara) ) },
 	{EEPADR,	(char	*)&AnaInpPara[0]+64,ANAINPPARA_ADR+64, 	( ( sizeof(AnaInpPara) > 64 ) ? ( sizeof(AnaInpPara) - 64 ) : 0 ) },
+#endif
+
+#if RM_POWER_ANZ
+	{EEPADR,	(char	*)&RmPowerPara[0],  RMPOWERPARA_ADR, sizeof(RmPowerPara) },
+#endif
+
+#if AE_DRUCK_ANZ > 0
+	{EEPADR,	(char	*)&DruckPara[0],		DRUCKPARA_ADR, 		( ( sizeof(DruckPara) > 64 ) ? 64 : sizeof(DruckPara) ) },
+	{EEPADR,	(char	*)&DruckPara[0]+64, DRUCKPARA_ADR+64, ( ( sizeof(DruckPara) > 64 ) ? ( sizeof(DruckPara) - 64 ) : 0 ) },
 #endif
 
 #if LEIST_BER == 1
@@ -253,7 +267,16 @@ const bicvec bicuser1[]	=	{
 	{EEPADR,	(char *)&mbZaehler[5].zdim,				ZAEHLMB6_DIM_ADR,												48 },
 //-	{EEPADR,	(char *)&MbusData[1].zwertMonAnf,	ZMB1_MONANF_ADR + 2*ZMB_MONANF_OFFS,		 4 },
 #endif
-
+#if MBUSANZ > 6
+	{EEPADR,	(char	*)&MbusPara[6],	  					MBUS_PARA_ADR + 6*MBUS_PARA_LENG, MBUSLENG },
+	{EEPADR,	(char *)&mbZaehler[6].zdim,				ZAEHLMB7_DIM_ADR,												48 },
+//-	{EEPADR,	(char *)&MbusData[1].zwertMonAnf,	ZMB1_MONANF_ADR + 2*ZMB_MONANF_OFFS,		 4 },
+#endif
+#if MBUSANZ > 7
+	{EEPADR,	(char	*)&MbusPara[7],	  					MBUS_PARA_ADR + 7*MBUS_PARA_LENG, MBUSLENG },
+	{EEPADR,	(char *)&mbZaehler[7].zdim,				ZAEHLMB8_DIM_ADR,												48 },
+//-	{EEPADR,	(char *)&MbusData[1].zwertMonAnf,	ZMB1_MONANF_ADR + 2*ZMB_MONANF_OFFS,		 4 },
+#endif
 	// Zählerdimensionierung
 	{EEPADR,	(char *)&zaehler[0].zdim,	ZAEHL01_DIM_ADR,		48 },	// ZAEHL01_DIM_ADR + ZAEHL01_NAME_ADR + ZAEHL01_NUMM_ADR
 	{EEPADR,	(char *)&zaehler[1].zdim,	ZAEHL02_DIM_ADR,		48 },
@@ -346,18 +369,22 @@ const bicvec bicuser1[]	=	{
 	// --------------- Adressen für IN/OUT-Modul R38 ------------
 	#if R38_MODULE > 0
 	{EEPADR,	(char	*)&mod38[0].bus,		R38_1_BUS_ADR,	2},		// bus und adr stehen hintereinander
+	{EEPADR,	(char	*)&mod38[0].life,		R38_1_LIFE_ADR,	2},		// 14 Bit, Bit0=1 -> Fühler IN 1 aktiviert usw.
 	#endif
 
 	#if R38_MODULE > 1
 	{EEPADR,	(char	*)&mod38[1].bus,		R38_2_BUS_ADR,	2},
+	{EEPADR,	(char	*)&mod38[1].life,		R38_2_LIFE_ADR,	2},
 	#endif
 
 	#if R38_MODULE > 2
 	{EEPADR,	(char	*)&mod38[2].bus,		R38_3_BUS_ADR,	2},
+	{EEPADR,	(char	*)&mod38[2].life,		R38_3_LIFE_ADR,	2},
 	#endif
 
 	#if R38_MODULE > 3
 	{EEPADR,	(char	*)&mod38[3].bus,		R38_4_BUS_ADR,	2},
+	{EEPADR,	(char	*)&mod38[3].life,		R38_4_LIFE_ADR,	2},
 	#endif
 
 	// ------------- Adressen für INP-Modul R39 ----------------
@@ -485,10 +512,10 @@ const bicvec bicuser1[]	=	{
 /* ------------------------ Kessel ------------------------------------*/
 
 #if KEANZ > 0
-	/* Kessel 1										*/
-	{EEPADR,	(char	*)&kes[KE1],					KE1_ADR,				( ( KESLENG > 64 ) ? 64 : KESLENG )},
-	{EEPADR,	(char	*)&kes[KE1] + 64,			KE1_ADR + 64,		( ( KESLENG > 64 ) ? KESLENG-64 : 0 )},
-	
+	{EEPADR,	(char	*)&kes[KE1],					KE_ADR,					( ( KESLENG > 64 ) ? 64 : KESLENG )		},
+	{EEPADR,	(char	*)&kes[KE1] + 64, 		KE_ADR + 64,		( ( KESLENG > 64 ) ? ( ( KESLENG > 128 ) ? 64 : KESLENG-64 ) : 0 )	},		
+	{EEPADR,	(char	*)&kes[KE1] + 128, 		KE_ADR + 128,		( ( KESLENG > 128 ) ? KESLENG-128 : 0 )	},		
+
 	{EEPADR,	(char	*)&ked[KE1].kestarts,	KESTARTS1_ADR	+ 0,					2},
 	{EEPADR,	(char	*)&ked[KE1].kesh,			KESH1_ADR			+ 0,					2},
 	{EEPADR,	(char	*)&ked[KE1].kes2h,		KES2H1_ADR		+ 0,					2},
@@ -498,9 +525,9 @@ const bicvec bicuser1[]	=	{
 #endif
 
 #if KEANZ > 1
-	/* Kessel 2										*/
-	{EEPADR,	(char	*)&kes[KE2],					KE2_ADR,				( ( KESLENG > 64 ) ? 64 : KESLENG )},
-	{EEPADR,	(char	*)&kes[KE2] + 64,			KE2_ADR + 64,		( ( KESLENG > 64 ) ? KESLENG-64 : 0 )},
+	{EEPADR,	(char	*)&kes[KE2],					KE_ADR + 1*KE_PAR_LENG,					( ( KESLENG > 64 ) ? 64 : KESLENG )		},
+	{EEPADR,	(char	*)&kes[KE2] + 64, 		KE_ADR + 1*KE_PAR_LENG + 64,		( ( KESLENG > 64 ) ? ( ( KESLENG > 128 ) ? 64 : KESLENG-64 ) : 0 )	},		
+	{EEPADR,	(char	*)&kes[KE2] + 128, 		KE_ADR + 1*KE_PAR_LENG + 128,		( ( KESLENG > 128 ) ? KESLENG-128 : 0 )	},		
 
 	{EEPADR,	(char	*)&ked[KE2].kestarts,	KESTARTS1_ADR + 2,					2},
 	{EEPADR,	(char	*)&ked[KE2].kesh,			KESH1_ADR 		+ 2,					2},
@@ -613,8 +640,13 @@ const bicvec bicuser1[]	=	{
 		{EEPADR,	(char	*)&rf_feld[11].ucSetup,					RF_SETUP12_EADR,		1, 0},
 #endif
 
+// Modbus
+#if MODBUS_UNI > 0
+	#include "Modbus/modbusstandard.h"
+#endif
+
 // Änderung neue Genibus-Implementierung
-#if USE_GENIBUS
+#if GENI == 1
 	{EEPADR,	(char	*)&genibus_device_table[0],	GENI_DEV1_ADR,		GENI_DEVICE_TABLE_SIZE},
 #if BUS_PU_MAX > 1
 	{EEPADR,	(char	*)&genibus_device_table[1],	GENI_DEV2_ADR,		GENI_DEVICE_TABLE_SIZE},
@@ -641,10 +673,6 @@ const bicvec bicuser1[]	=	{
 	{EEPADR,	(char	*)&uc_genibus_own_adr,			GENI_OWN_ADR,			1},	
 #endif
 
-// Modbus
-#if MODBUS_UNI > 0
-	#include "Modbus/modbusstandard.h"
-#endif
 
 };
 const char	BICUSER1Z = sizeof(bicuser1) / sizeof(bicvec);   // Anzahl der Einträge

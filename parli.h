@@ -40,13 +40,13 @@ const Pgrup anl[] = {
 	#include "parli_Copy.h"
 	
 	#if TVP_ANL == 1
-	{"*10:"," VORLAUF   PRIM."," C    ", P&TVP[ANL],						 	ANA_FORMP, 1, P&vis,		V1, 0, 0},
-	{"*10:"," VORLAUF   PRIM."," C    ", P&TVP[ANL],					 ANA_FORMP, 0x81, P&kom,		E1, FUEHLER, 0},
+	{"*10:"," VORLAUF   PRIM."," C    ", P&TVP[ANL],						 	ANA_FORMP, 1, P&vis,		V0, 0, 0},
+	{"*10:"," VORLAUF   PRIM."," C    ", P&TVP[ANL],					 ANA_FORMP, 0x81, P&kom,		V0, FUEHLER, 0},
 	#endif
 
 	#if TRP_ANL == 1
-	{"*11:"," RUECKLAUF PRIM."," C    ", P&TRP[ANL],							 ANA_FORMP, 1, P&vis,		V1, 0, 0},      
-	{"*11:"," RUECKLAUF PRIM."," C    ", P&TRP[ANL],						ANA_FORMP, 0x81, P&kom,		E1, FUEHLER, 0},
+	{"*11:"," RUECKLAUF PRIM."," C    ", P&TRP[ANL],							 ANA_FORMP, 1, P&vis,		V0, 0, 0},      
+	{"*11:"," RUECKLAUF PRIM."," C    ", P&TRP[ANL],						ANA_FORMP, 0x81, P&kom,		V0, FUEHLER, 0},
 	#endif
 
 	#if TAE_ANZ == 1
@@ -210,6 +210,14 @@ const Pgrup anl[] = {
 	{"*94:"," SSTM PUMPENBUS?","       ", P&ssmBusPu,			  		JANEIN_FORM, 0, P&vis,		A1, EINZEL, 0},
 	{".->;"," sstm pubus ctr "," min/2 ", P&ssmPuCtr,						 		US_CHAR, 0, P&hid2,		V0, 0, 0},
 	#endif
+	
+	// AnFre 17.11.2011 02.10.2012 ge?ndert !!!
+	{"*95:"," SSM EXT.1 HKV ?","       ", P&ext1SammelSM,				 JANEIN_FORM, 0, P&vis,		A1, EINZEL, 0},
+	{"*96:"," SSM EXT.2 WPU ?","       ", P&ext2SammelSM,				 JANEIN_FORM, 0, P&vis,		A1, EINZEL, 0},
+	{"*97:"," SSM EXT.3 KES ?","       ", P&ext3SammelSM,				 JANEIN_FORM, 0, P&vis,		A1, EINZEL, 0},
+	{"*->:"," EXTERNE SSM ?  ","       ", P&SAMAL[ANL], 		 	 JANEIN_FORMIP, 0, P&vis,		A1, EINZEL, 0},
+ 	{"_->."," SSM-Bezeichnung","       ", (char*)(EXTALARMTEXT_ADR),	EEP_ASCII_FORM, 15, P&hid2,	V0, 0, 0},
+
 	
 	{"*98."," BELEGUNG DER   ","       ", P&Ein_Ausg,						ASCII_FORM, 0, P&hid2,		V0, 0, 0},
 	{"+->."," EINGANG  IN1   ","       ", P&nlist[0],					EA_NAME_FORM, 0, P&hid2,		V0, 0, 0},
@@ -437,17 +445,17 @@ const Pgrup ww1[] = {
 	{" 21;"," PROFIL-DAUER 1 "," h     ", P&prs[PR1].profil[0].Dauer, 		US_CHAR, 0, P&hid1,	V1, 0, 0},
 	{" 22;"," PROFIL-TEMP. 1 "," C    ", P&prs[PR1].profil[0].Twwsol,		 US_INT, 1, P&hid1,	V1, 0, 0},
 	{"*->:"," PROFIL 1 EIN ? ","       ", P&prd[PR1].profEin[0],			JANEIN_FORM, 0, P&vis,	V0, 0, 0},
-	{" 23;"," PROFIL-ZEIT 2  "," h:min ", P&prs[PR1].profil[1].Zeit,		ZEIT_FORM, 0, P&hid1,	V1, 0, 0},
-	{" 24;"," PROFIL-DAUER 2 "," h     ", P&prs[PR1].profil[1].Dauer, 		US_CHAR, 0, P&hid1,	V1, 0, 0},
-	{" 25;"," PROFIL-TEMP. 2 "," C    ", P&prs[PR1].profil[1].Twwsol,		 US_INT, 1, P&hid1,	V1, 0, 0},
+	{" 23;"," PROFIL-ZEIT 2  "," h:min ", P&prs[PR1].profil[1].Zeit,		ZEIT_FORM, 0, P&hid1,	V0, 0, 0},
+	{" 24;"," PROFIL-DAUER 2 "," h     ", P&prs[PR1].profil[1].Dauer, 		US_CHAR, 0, P&hid1,	V0, 0, 0},
+	{" 25;"," PROFIL-TEMP. 2 "," C    ", P&prs[PR1].profil[1].Twwsol,		 US_INT, 1, P&hid1,	V0, 0, 0},
 	{"*->:"," PROFIL 2 EIN ? ","       ", P&prd[PR1].profEin[1],			JANEIN_FORM, 0, P&vis,	V0, 0, 0},
-	{" 26;"," PROFIL-ZEIT 3  "," h:min ", P&prs[PR1].profil[2].Zeit,		ZEIT_FORM, 0, P&hid1,	V1, 0, 0},
-	{" 27;"," PROFIL-DAUER 3 "," h     ", P&prs[PR1].profil[2].Dauer, 		US_CHAR, 0, P&hid1,	V1, 0, 0},
-	{" 28;"," PROFIL-TEMP. 3 "," C    ", P&prs[PR1].profil[2].Twwsol,		 US_INT, 1, P&hid1,	V1, 0, 0},
+	{" 26;"," PROFIL-ZEIT 3  "," h:min ", P&prs[PR1].profil[2].Zeit,		ZEIT_FORM, 0, P&hid1,	V0, 0, 0},
+	{" 27;"," PROFIL-DAUER 3 "," h     ", P&prs[PR1].profil[2].Dauer, 		US_CHAR, 0, P&hid1,	V0, 0, 0},
+	{" 28;"," PROFIL-TEMP. 3 "," C    ", P&prs[PR1].profil[2].Twwsol,		 US_INT, 1, P&hid1,	V0, 0, 0},
 	{"*->:"," PROFIL 3 EIN ? ","       ", P&prd[PR1].profEin[2],			JANEIN_FORM, 0, P&vis,	V0, 0, 0},
-	{" 29;"," PROFIL-ZEIT 4  "," h:min ", P&prs[PR1].profil[3].Zeit,		ZEIT_FORM, 0, P&hid1,	V1, 0, 0},
-	{" 30;"," PROFIL-DAUER 4 "," h     ", P&prs[PR1].profil[3].Dauer, 		US_CHAR, 0, P&hid1,	V1, 0, 0},
-	{" 31;"," PROFIL-TEMP. 4 "," C    ", P&prs[PR1].profil[3].Twwsol,		 US_INT, 1, P&hid1,	V1, 0, 0},
+	{" 29;"," PROFIL-ZEIT 4  "," h:min ", P&prs[PR1].profil[3].Zeit,		ZEIT_FORM, 0, P&hid1,	V0, 0, 0},
+	{" 30;"," PROFIL-DAUER 4 "," h     ", P&prs[PR1].profil[3].Dauer, 		US_CHAR, 0, P&hid1,	V0, 0, 0},
+	{" 31;"," PROFIL-TEMP. 4 "," C    ", P&prs[PR1].profil[3].Twwsol,		 US_INT, 1, P&hid1,	V0, 0, 0},
 	{"*->:"," PROFIL 4 EIN ? ","       ", P&prd[PR1].profEin[3],			JANEIN_FORM, 0, P&vis,	V0, 0, 0},
 	{"*->."," ProfilDifferenz"," K     ", P&prd[PR1].deltaTwwsol,						S_INT, 1, P&hid2,	V0, 0, 0},
 
