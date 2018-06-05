@@ -13,33 +13,9 @@
 #include "sramext.h"
 #include "uramext.h"
 #include "projdef.h"
+#include "modbus.h"
 
 #if ( MODBUS_SIO )
-
-#define SIO_ERROR				0x03
-#define	CRC_ERROR				0x04
-#define EXEPTION				0x05
-#define SoF_ERROR				0x07
-#define	LENGT_ERROR			0x08
-#define	RX_BUF_READY		0x80
-
-// MODBUS-Functioncodes
-// reads
-#define READ_COIL_STATE      		1    // Einzel-Bit-Werte aus Ausgangsregistern Lesen
-#define READ_DISCRETE_INP    		2    // Einzel-Bit-Werte aus Discreten Inputregistern lesen (read inputs)
-#define READ_HOLDING_REGS    		3		 // 16Bit-Werte aus I/O-Registern lesen
-#define READ_INPUT_REGS      		4    // 16Bit-Werte aus Input-Registern lesen (Meﬂwerte,nicht beschreibbar) 
-
-// writes
-#define WRITE_SINGLE_COIL    		5    // Einzel-Bit-Werte in Ausgangsregister schreiben (wie Relais-Ausg‰nge, Einzelne Werte) 
-#define WRITE_SINGLE_HOLDING 		6    // 16Bit-Werte in I/O-Register schreiben (Einzelne Werte)
-#define WRITE_MULTIPLE_COILS 		15	 // Einzel-Bit-Werte in Ausgangsregister schreiben (wie Relais-Ausg‰nge, mehrere Bits hintereinander)
-#define WRITE_MULTIPLE_HOLDINGS 	16   // 16Bit-Werte in I/O-Register schreiben (Mehrere Werte hintereinander)
-
-// Extended registers
-#define READ_EXTENDED        		0x14
-#define WRITE_EXTENDED       		0x15
-
 void start_modb_transmit(char port);
 void set_EoF_timer(char port);
 void Modb_Rx_Ready(char port);
@@ -54,9 +30,9 @@ void U_Modbus_ISR_Tx_Int(char port)
 	switch(port)
 	{
 		case S1:
-			if(modb_tx_count < modb_leng_tx)
+			if(modb_tx_count[port] < modb_leng_tx[port])
 			{
-					TB_S1	=	TxBuf_S1[modb_tx_count++];		// Bytes	senden
+					TB_S1	=	TxBuf_S1[modb_tx_count[port]++];		// Bytes	senden
 			}
 			else	// Ende	 
 			{
@@ -64,9 +40,9 @@ void U_Modbus_ISR_Tx_Int(char port)
 				TIC_S1 			= 0x00;							// Disable	Interrupt	Request
 //				RTS_S1			=	0;							// Sendekanal sperren
 //				Modb_Rx_Ready(port);	nach Timer-IT verlagert
-				timer_function = 1;							// F¸r Timer-ISR: RTS-Delay aktivieren
-				P_TOUTR_S1	=	modb_rts_prescaler;	// Load  Prescaler
-				C_TOUTR_S1	=	modb_rts_timer;			// Load  Counter
+				timer_function[port] = 1;							// F¸r Timer-ISR: RTS-Delay aktivieren
+				P_TOUTR_S1	=	modb_rts_prescaler[port];	// Load  Prescaler
+				C_TOUTR_S1	=	modb_rts_timer[port];			// Load  Counter
 				P_TOUTS_S1	= 1;								// Start	 RTS Prescaler
 				C_TOUTS_S1	= 1;								// Start	 RTS Timer Counter
 			}
@@ -76,9 +52,9 @@ void U_Modbus_ISR_Tx_Int(char port)
 			if(TIR_BIT_S2 == 1)							// Sendeinterrupt ?
 			{
 				TIR_BIT_S2	= 0;							// Interrupt Request Bit lˆschen
-				if(modb_tx_count < modb_leng_tx)
+				if(modb_tx_count[port] < modb_leng_tx[port])
 				{
-						TB_S2	=	TxBuf_S2[modb_tx_count++];		// Bytes	senden
+						TB_S2	=	TxBuf_S2[modb_tx_count[port]++];		// Bytes	senden
 				}
 				else	// Ende	 
 				{
@@ -86,9 +62,9 @@ void U_Modbus_ISR_Tx_Int(char port)
 					TIE_BIT_S2	= 0;							// Interrupt Enable  Bit lˆschen
 					TIC_S2 			= 0x00;						// Disable	Interrupt	Request
 
-					timer_function = 1;						// F¸r Timer-ISR: RTS-Delay aktivieren
-					P_TOUTR_S2	=	modb_rts_prescaler;		// Load  Prescaler
-					C_TOUTR_S2	=	modb_rts_timer;				// Load  Counter
+					timer_function[port] = 1;						// F¸r Timer-ISR: RTS-Delay aktivieren
+					P_TOUTR_S2	=	modb_rts_prescaler[port];		// Load  Prescaler
+					C_TOUTR_S2	=	modb_rts_timer[port];				// Load  Counter
 					P_TOUTS_S2	= 1;							// Start	 RTS Prescaler
 					C_TOUTS_S2	= 1;							// Start	 RTS Timer Counter
 				}
@@ -96,9 +72,9 @@ void U_Modbus_ISR_Tx_Int(char port)
 			break;
 
 		case S3:
-			if(modb_tx_count < modb_leng_tx)
+			if(modb_tx_count[port] < modb_leng_tx[port])
 			{
-					TB_S3	=	TxBuf_S3[modb_tx_count++];		// Bytes	senden
+					TB_S3	=	TxBuf_S3[modb_tx_count[port]++];		// Bytes	senden
 			}
 			else	// Ende	 
 			{
@@ -106,9 +82,9 @@ void U_Modbus_ISR_Tx_Int(char port)
 				TIC_S3 			= 0x00;							// Disable	Interrupt	Request
 //				RTS_S3			=	0;							// Sendekanal sperren
 //				Modb_Rx_Ready(port);	nach Timer-IT verlagert
-				timer_function = 1;							// F¸r Timer-ISR: RTS-Delay aktivieren
-				P_TOUTR_S3	=	modb_rts_prescaler;	// Load  Prescaler
-				C_TOUTR_S3	=	modb_rts_timer;			// Load  Counter
+				timer_function[port] = 1;							// F¸r Timer-ISR: RTS-Delay aktivieren
+				P_TOUTR_S3	=	modb_rts_prescaler[port];	// Load  Prescaler
+				C_TOUTR_S3	=	modb_rts_timer[port];			// Load  Counter
 				P_TOUTS_S3	= 1;								// Start	 RTS Prescaler
 				C_TOUTS_S3	= 1;								// Start	 RTS Timer Counter
 			}
@@ -136,9 +112,9 @@ void U_Modbus_ISR_Rx_Int(char port)
 			modb_rx_buff_size = S1_RXSIZE;
 			rbyte 	= RB_S1;			
 			if(SUM_BIT_S1 == 1)					// Summenfehlerbit gesetzt ?
-			{	modb_sio_errorflag = SIO_ERROR;
+			{	modb_sio_errorflag[port] = SIO_ERROR;
 				Modb_Rx_DeInit(port);
-				modb_rx_int_state = 0;		// Rx-ISR in Leerlauf		
+				modb_rx_int_state[port] = 0;		// Rx-ISR in Leerlauf		
 			}
 			break;
 
@@ -147,11 +123,11 @@ void U_Modbus_ISR_Rx_Int(char port)
 			modb_rx_buff_size = S2_RXSIZE;
 			rbyte 	= RB_S2;			
 			RIR_BIT_S2   = 0;						// Interrupt Request Bit lˆschen
-			if(SUM_BIT_S2 == 1)					// Summenfehlerbit gesetzt ?
-			{	modb_sio_errorflag = SIO_ERROR;
+	/*		if(SUM_BIT_S2 == 1)					// Summenfehlerbit gesetzt ?
+			{	modb_sio_errorflag[port] = SIO_ERROR;
 				Modb_Rx_DeInit(port);
-				modb_rx_int_state = 0;		// Rx-ISR in Leerlauf		
-			}
+				modb_rx_int_state[port] = 0;		// Rx-ISR in Leerlauf		
+			} */
 			break;
 	
 		case S3:
@@ -159,26 +135,26 @@ void U_Modbus_ISR_Rx_Int(char port)
 			modb_rx_buff_size = S3_RXSIZE;
 			rbyte 	= RB_S3;			
 			if(SUM_BIT_S3 == 1)					// Summenfehlerbit gesetzt ?
-			{	modb_sio_errorflag = SIO_ERROR;
+			{	modb_sio_errorflag[port] = SIO_ERROR;
 				Modb_Rx_DeInit(port);
-				modb_rx_int_state = 0;		// Rx-ISR in Leerlauf		
+				modb_rx_int_state[port] = 0;		// Rx-ISR in Leerlauf		
 			}
 	}
 
-  switch(modb_rx_int_state)
+  switch(modb_rx_int_state[port])
 	{
 		case 0:				// do nothing
 			break;
 
 		case 1:
-			if(modb_rx_count < modb_rx_buff_size)			// L‰nge Testen
+			if(modb_rx_count[port] < modb_rx_buff_size)			// L‰nge Testen
 			{	
-				pRxBuf[modb_rx_count++] = rbyte;
+				pRxBuf[modb_rx_count[port]++] = rbyte;
 			}
 			else
 			{	
-				modb_sio_errorflag = LENGT_ERROR;
-				modb_rx_int_state = 2;
+				modb_sio_errorflag[port] = LENGT_ERROR;
+				modb_rx_int_state[port] = 2;
 			}
 			set_EoF_timer(port);
 			break;
@@ -202,26 +178,26 @@ void U_Modbus_ISR_Tel_Tout(char port)
 		pRxBuf  = RxBuf_S1;
 		P_TOUTS_S1	= 0;		// Stop	 Prescaler
 		C_TOUTS_S1	= 0;		// Stop	 Timer Counter
-		if(timer_function)	// RTS-Delay-Funktion
+		if(timer_function[port])	// RTS-Delay-Funktion
 		{
 			RTS_S1			=	0;	// Sendekanal sperren
 			Modb_Rx_Ready(port);
 		}
 		else								// EoF-Funktion
 		{
-			if((pRxBuf[0] == modb_curr_adr) && (modb_rx_count > 3))	// aus Zeitgr¸nden nur g¸ltige Frames dem Handler melden
-			{	modb_rx_buffer_ready = 1;
+			if((pRxBuf[0] == modb_curr_adr[port]) && (modb_rx_count[port] > 3))	// aus Zeitgr¸nden nur g¸ltige Frames dem Handler melden
+			{	modb_rx_buffer_ready[port] = 1;
 				Modb_Rx_DeInit(port);
-				modb_rx_int_state = 0;	// Rx-ISR in Leerlauf		
+				modb_rx_int_state[port] = 0;	// Rx-ISR in Leerlauf		
 			}
 			else
 			{ 			
 				Modb_Rx_Ready(port);	// nach ung¸lt. Adr oder Stˆrung Rx neu aktivieren
-				modb_rx_count		=	0;		// Sende-	/	Empfangspuffer Index
-				modb_sio_errorflag = 0;
-				modb_rx_buffer_ready = 0;
-				modb_rx_int_state = 1;	// Rx-ISR aktiv
-				timer_function = 0;							// F¸r Timer-ISR: EoF f¸r Rx-Funktion einschalten
+				modb_rx_count[port]		=	0;		// Sende-	/	Empfangspuffer Index
+				modb_sio_errorflag[port] = 0;
+				modb_rx_buffer_ready[port] = 0;
+				modb_rx_int_state[port] = 1;	// Rx-ISR aktiv
+				timer_function[port] = 0;							// F¸r Timer-ISR: EoF f¸r Rx-Funktion einschalten
 			}
 		}
 	}
@@ -233,26 +209,26 @@ void U_Modbus_ISR_Tel_Tout(char port)
 		pRxBuf  = RxBuf_S2;
 		P_TOUTS_S2	= 0;		// Stop	 Prescaler
 		C_TOUTS_S2	= 0;		// Stop	 Timer Counter
-		if(timer_function)	// RTS-Delay-Funktion
+		if(timer_function[port])	// RTS-Delay-Funktion
 		{
 			RTS_S2			=	0;	// Sendekanal sperren
 			Modb_Rx_Ready(port);
 		}
 		else								// Rx-EoF-Funktion
 		{
-			if((pRxBuf[0] == modb_curr_adr) && (modb_rx_count > 3))	// aus Zeitgr¸nden nur g¸ltige Frames dem Handler melden
-			{	modb_rx_buffer_ready = 1;
+			if((pRxBuf[0] == modb_curr_adr[port]) && (modb_rx_count[port] > 3))	// aus Zeitgr¸nden nur g¸ltige Frames dem Handler melden
+			{	modb_rx_buffer_ready[port] = 1;
 				Modb_Rx_DeInit(port);
-				modb_rx_int_state = 0;	// Rx-ISR in Leerlauf		
+				modb_rx_int_state[port] = 0;	// Rx-ISR in Leerlauf		
 			}
 			else
 			{ 			
 				Modb_Rx_Ready(port);	// nach ung¸lt. Adr oder Stˆrung Rx neu aktivieren
-				modb_rx_count		=	0;		// Sende-	/	Empfangspuffer Index
-				modb_sio_errorflag = 0;
-				modb_rx_buffer_ready = 0;
-				modb_rx_int_state = 1;	// Rx-ISR aktiv
-				timer_function = 0;							// F¸r Timer-ISR: EoF f¸r Rx-Funktion einschalten
+				modb_rx_count[port]		=	0;		// Sende-	/	Empfangspuffer Index
+				modb_sio_errorflag[port] = 0;
+				modb_rx_buffer_ready[port] = 0;
+				modb_rx_int_state[port] = 1;	// Rx-ISR aktiv
+				timer_function[port] = 0;							// F¸r Timer-ISR: EoF f¸r Rx-Funktion einschalten
 			}
 		}
 	}
@@ -264,26 +240,26 @@ void U_Modbus_ISR_Tel_Tout(char port)
 		pRxBuf  = RxBuf_S3;
 		P_TOUTS_S3	= 0;		// Stop	 Prescaler
 		C_TOUTS_S3	= 0;		// Stop	 Timer Counter
-		if(timer_function)	// RTS-Delay-Funktion
+		if(timer_function[port])	// RTS-Delay-Funktion
 		{
 			RTS_S3			=	0;	// Sendekanal sperren
 			Modb_Rx_Ready(port);
 		}
 		else								// EoF-Funktion
 		{
-			if((pRxBuf[0] == modb_curr_adr) && (modb_rx_count > 3))	// aus Zeitgr¸nden nur g¸ltige Frames dem Handler melden
-			{	modb_rx_buffer_ready = 1;
+			if((pRxBuf[0] == modb_curr_adr[port]) && (modb_rx_count[port] > 3))	// aus Zeitgr¸nden nur g¸ltige Frames dem Handler melden
+			{	modb_rx_buffer_ready[port] = 1;
 				Modb_Rx_DeInit(port);
-				modb_rx_int_state = 0;	// Rx-ISR in Leerlauf		
+				modb_rx_int_state[port] = 0;	// Rx-ISR in Leerlauf		
 			}
 			else
 			{ 			
 				Modb_Rx_Ready(port);	// nach ung¸lt. Adr oder Stˆrung Rx neu aktivieren
-				modb_rx_count		=	0;		// Sende-	/	Empfangspuffer Index
-				modb_sio_errorflag = 0;
-				modb_rx_buffer_ready = 0;
-				modb_rx_int_state = 1;	// Rx-ISR aktiv
-				timer_function = 0;							// F¸r Timer-ISR: EoF f¸r Rx-Funktion einschalten
+				modb_rx_count[port]		=	0;		// Sende-	/	Empfangspuffer Index
+				modb_sio_errorflag[port] = 0;
+				modb_rx_buffer_ready[port] = 0;
+				modb_rx_int_state[port] = 1;	// Rx-ISR aktiv
+				timer_function[port] = 0;							// F¸r Timer-ISR: EoF f¸r Rx-Funktion einschalten
 			}
 		}
 	}
@@ -309,17 +285,7 @@ void modb_sio_init(char port)
 	if(port == S1)
 	{
 		RTS_S1	=	0;			// Empfangskanal freigeben RTS=Low
-// IF-Modul Modbus Stratos (2097808): Pumpen-Parameter C: = 6	(Standard) 
-// wird in U_Modbus.c angepasst an eingestellten Wert (Parli WILO-Anhang)
-//		MR_S1 = 0x65;				// 0 1 1 0 0 101	
-//												// | | | | | |||
-//												// | | | | | UART Mode 8 Bit
-//												// | | | | Internal Clock             
-//												// | | | 1 Stop Bit	
-//												// | | parity even	
-//												// | parity
-//												// Rx Tx Polarity not inversed
-		MR_S1 = 0x05;			// Transmit Receive Mode Register = UART Mode 8 Bit	(Reinhard Klaus Parameter C: = 2)
+		MR_S1 = 0x05;			// Transmit Receive Mode Register = UART Mode 8 Bit
 		C0_S1 = 0x10;			// Transmit Receive Control Register 0
 		TB_S1 = RB_S1;			// SIO entleeren	(Kopieren auf Sendepuffer)
 		TB_S1 = 0;				// Sendepuffer lˆschen
@@ -330,10 +296,10 @@ void modb_sio_init(char port)
 	// Fehlerstatus im Empfangspuffer lˆschen durch R¸cksetzen des Receive Enable Bit
 		C1_S1 = 0x00;			// Transmit Receive Control Register 1		
 		RE_BIT_S1 = 1;		// Empfang erlauben 																						
-		BRG_S1 = (unsigned char)( ( (f1_CLK_SPEED/16) / 9600) -1);
-		modb_rts_prescaler = 64;		// Vorteiler: 64
-		modb_rts_timer = 32;		// war 4800;
-		EoF_timer		=	120;	
+		BRG_S1 = (unsigned char)( ( (f1_CLK_SPEED/16) / Baudrate_S1) -1);
+		modb_rts_prescaler[port] = 64;		// Vorteiler: 64
+		modb_rts_timer[port] = 32;		// war 4800;
+		EoF_timer[port]		=	120;	
 		P_TOUTS_S1	= 0;		// Stop	 RTS Prescaler
 		C_TOUTS_S1	= 0;		// Stop	 RTS Timer Counter
 	}
@@ -342,6 +308,7 @@ void modb_sio_init(char port)
 	#if (IMPLEMENT_S2 & MODBUS1_IMPL) == MODBUS1_IMPL
 	if(port == S2)
 	{
+	
 		RTS_S2	=	0;			// Empfangskanal freigeben RTS=Low
 		MR_S2 = 0x05;			// Transmit Receive Mode Register = UART Mode 8 Bit
 		C0_S2 = 0x10;			// Transmit Receive Control Register 0
@@ -352,19 +319,19 @@ void modb_sio_init(char port)
 	
 		TB_S2 = RB_S2;		// SIO entleeren	(Kopieren auf Sendepuffer)
 		TB_S2 = 0;				// Sendepuffer lˆschen
-		EoF_timer		=	120;	
-
+	
 		DISABLE_IRQ			
 		RIC_S2 = 0x00;		// Disable Receive Interrupt Prio: 4	(0x04)		wegen R¸ckkopplung
 		ENABLE_IRQ	
 	// Fehlerstatus im Empfangspuffer lˆschen durch R¸cksetzen des Receive Enable Bit
 		C1_S2 = 0x00;			// Transmit Receive Control Register 1		
 		RE_BIT_S2 = 0;		// Empfang noch nicht	erlauben 
-		BRG_S2 = (unsigned char)( ( (f1_CLK_SPEED/16) / 9600) -1);
+		BRG_S2 = (unsigned char)( ( (f1_CLK_SPEED/16) / Baudrate_S2) -1);
 
-		modb_rts_prescaler = 64;		// Vorteiler: 64
-		modb_rts_timer = 32;		// war 4800;
-	
+		modb_rts_prescaler[port] = 64;		// Vorteiler: 64
+		modb_rts_timer[port] = 32;		// war 4800;
+		EoF_timer[port]		=	120;	
+		
 		P_TOUTS_S2	= 0;		// Stop	 RTS Prescaler
 		C_TOUTS_S2	= 0;		// Stop	 RTS Timer Counter
 
@@ -379,7 +346,7 @@ void modb_sio_init(char port)
 	if(port == S3)
 	{
 		RTS_S3	=	0;			// Empfangskanal freigeben RTS=Low
-		MR_S3 = 0x05;			// Transmit Receive Mode Register = UART Mode 8 Bit
+		MR_S3 = 0x05;				// 0 1 1 0 0 101	
 		C0_S3 = 0x10;			// Transmit Receive Control Register 0
 		TB_S3 = RB_S3;			// SIO entleeren	(Kopieren auf Sendepuffer)
 		TB_S3 = 0;				// Sendepuffer lˆschen
@@ -390,10 +357,10 @@ void modb_sio_init(char port)
 	// Fehlerstatus im Empfangspuffer lˆschen durch R¸cksetzen des Receive Enable Bit
 		C1_S3 = 0x00;			// Transmit Receive Control Register 1		
 		RE_BIT_S3 = 1;		// Empfang erlauben 																						
-		BRG_S3 = (unsigned char)( ( (f1_CLK_SPEED/16) / 9600) -1);
-		modb_rts_prescaler = 64;		// Vorteiler: 64
-		modb_rts_timer = 32;		// war 4800;
-		EoF_timer		=	120;	
+		BRG_S3 = (unsigned char)( ( (f1_CLK_SPEED/16) / Baudrate_S3) -1);
+		modb_rts_prescaler[port] = 64;		// Vorteiler: 64
+		modb_rts_timer[port] = 32;		// war 4800;
+		EoF_timer[port]		=	120;	
 		P_TOUTS_S3	= 0;		// Stop	 RTS Prescaler
 		C_TOUTS_S3	= 0;		// Stop	 RTS Timer Counter
 	}
@@ -411,21 +378,21 @@ void start_modb_transmit(char port)
 	{
 		RTS_S1		= 1;						// Transmitter Enable
 	// Frame Check Sequenz berechnen
-		fcs = modbus_crc ( (char *)(TxBuf_S1), modb_tx_count );
-		TxBuf_S1[modb_tx_count++] = ((fcs >> 8) & 0x00ff);
-		TxBuf_S1[modb_tx_count++] = (fcs & 0x00ff);
+		fcs = modbus_crc ( (char *)(TxBuf_S1), modb_tx_count[port] );
+		TxBuf_S1[modb_tx_count[port]++] = ((fcs >> 8) & 0x00ff);
+		TxBuf_S1[modb_tx_count[port]++] = (fcs & 0x00ff);
 		Modb_Rx_DeInit(port);	
 		RxBuf_S1[0] = 0;
 		delay(1);									// 100µs Zwangspause f¸r eine stabile Startbit-Breite
-		modb_leng_tx = modb_tx_count;		// Telegramml‰nge	f¸r	Sendeinterrupt
+		modb_leng_tx[port] = modb_tx_count[port];		// Telegramml‰nge	f¸r	Sendeinterrupt
 		/*	SIO	-	Initialisieren und Sendeinterrupt	vorbereiten			*/
-		modb_tx_count	= 0;			 		// Sendepuffer	Index	
+		modb_tx_count[port]	= 0;			 		// Sendepuffer	Index	
 		TE_BIT_S1 = 1;						// Senden erlauben
 		DISABLE_IRQ			
 		TIC_S1 = 0x04;						// Enable Transmit Interrupt Prio: 4			
 		ENABLE_IRQ	
 
-		TB_S1	=	TxBuf_S1[modb_tx_count++];	// Start Tx-Int
+		TB_S1	=	TxBuf_S1[modb_tx_count[port]++];	// Start Tx-Int
 	}
 	#endif
 
@@ -434,15 +401,15 @@ void start_modb_transmit(char port)
 	{
 		RTS_S2		= 1;						// Transmitter Enable
 	// Frame Check Sequenz berechnen
-		fcs = modbus_crc ( (char *)(TxBuf_S2), modb_tx_count );
-		TxBuf_S2[modb_tx_count++] = ((fcs >> 8) & 0x00ff);
-		TxBuf_S2[modb_tx_count++] = (fcs & 0x00ff);
+		fcs = modbus_crc ( (char *)(TxBuf_S2), modb_tx_count[port] );
+		TxBuf_S2[modb_tx_count[port]++] = ((fcs >> 8) & 0x00ff);
+		TxBuf_S2[modb_tx_count[port]++] = (fcs & 0x00ff);
 		Modb_Rx_DeInit(port);
 		RxBuf_S2[0] = 0;
 		delay(1);									// 100µs Zwangspause f¸r eine stabile Startbit-Breite
-		modb_leng_tx = modb_tx_count;		// Telegramml‰nge	f¸r	Sendeinterrupt
+		modb_leng_tx[port] = modb_tx_count[port];		// Telegramml‰nge	f¸r	Sendeinterrupt
 		/*	SIO	-	Initialisieren und Sendeinterrupt	vorbereiten			*/
-		modb_tx_count	= 0;			 		// Sendepuffer	Index	
+		modb_tx_count[port]	= 0;			 		// Sendepuffer	Index	
 		TE_BIT_S2 = 1;						// Senden erlauben
 		TIRLT_BIT_S2 = 1;		// Interrupt Request Select Bit im Interrupt Enable  Register (IIO1IE) setzen  auf used for interrupt
 		TIR_BIT_S2	 = 0;		// Interrupt Request Bit 				im Interrupt Request Register (IIO1IR) lˆschen
@@ -450,7 +417,7 @@ void start_modb_transmit(char port)
 		DISABLE_IRQ			
 		TIC_S2 = 0x04;						// Enable Transmit Interrupt Prio: 4			
 		ENABLE_IRQ	
-		TB_S2	 = TxBuf_S2[modb_tx_count++];	// Start Tx-Int
+		TB_S2	 = TxBuf_S2[modb_tx_count[port]++];	// Start Tx-Int
 	}
 	#endif
 
@@ -459,21 +426,21 @@ void start_modb_transmit(char port)
 	{
 		RTS_S3		= 1;						// Transmitter Enable
 	// Frame Check Sequenz berechnen
-		fcs = modbus_crc ( (char *)(TxBuf_S3), modb_tx_count );
-		TxBuf_S3[modb_tx_count++] = ((fcs >> 8) & 0x00ff);
-		TxBuf_S3[modb_tx_count++] = (fcs & 0x00ff);
+		fcs = modbus_crc ( (char *)(TxBuf_S3), modb_tx_count[port] );
+		TxBuf_S3[modb_tx_count[port]++] = ((fcs >> 8) & 0x00ff);
+		TxBuf_S3[modb_tx_count[port]++] = (fcs & 0x00ff);
 		Modb_Rx_DeInit(port);	
 		RxBuf_S3[0] = 0;
 		delay(1);									// 100µs Zwangspause f¸r eine stabile Startbit-Breite
-		modb_leng_tx = modb_tx_count;		// Telegramml‰nge	f¸r	Sendeinterrupt
+		modb_leng_tx[port] = modb_tx_count[port];		// Telegramml‰nge	f¸r	Sendeinterrupt
 		/*	SIO	-	Initialisieren und Sendeinterrupt	vorbereiten			*/
-		modb_tx_count	= 0;			 		// Sendepuffer	Index	
+		modb_tx_count[port]	= 0;			 		// Sendepuffer	Index	
 		TE_BIT_S3 = 1;						// Senden erlauben
 		DISABLE_IRQ			
 		TIC_S3 = 0x04;						// Enable Transmit Interrupt Prio: 4			
 		ENABLE_IRQ	
 
-		TB_S3	=	TxBuf_S3[modb_tx_count++];	// Start Tx-Int
+		TB_S3	=	TxBuf_S3[modb_tx_count[port]++];	// Start Tx-Int
 	}
 	#endif
 }
@@ -483,14 +450,14 @@ void start_modb_transmit(char port)
 ///////////////////////////////////////////////////////////////////
 void set_EoF_timer(char port)
 {
-	timer_function = 0;						// F¸r Timer-ISR: EoF-Funktion
+	timer_function[port] = 0;						// F¸r Timer-ISR: EoF-Funktion
 	switch(port)
 	{
 		case S1:
 			P_TOUTS_S1	= 0;					// Stop	 Prescaler
 			C_TOUTS_S1	= 0;					// Stop	 Timer Counter
-			P_TOUTR_S1	=	modb_rts_prescaler;	// Load  Prescaler
-			C_TOUTR_S1	=	EoF_timer;			// Load  Counter
+			P_TOUTR_S1	=	modb_rts_prescaler[port];	// Load  Prescaler
+			C_TOUTR_S1	=	EoF_timer[port];			// Load  Counter
 			P_TOUTS_S1	= 1;					// Start	 Prescaler
 			C_TOUTS_S1	= 1;					// Start	 Timer Counter
 			break;
@@ -498,8 +465,8 @@ void set_EoF_timer(char port)
 		case S2:
 			P_TOUTS_S2	= 0;					// Stop	 Prescaler
 			C_TOUTS_S2	= 0;					// Stop	 Timer Counter
-			P_TOUTR_S2	=	modb_rts_prescaler;	// Load  Prescaler
-			C_TOUTR_S2	=	EoF_timer;			// Load  Counter
+			P_TOUTR_S2	=	modb_rts_prescaler[port];	// Load  Prescaler
+			C_TOUTR_S2	=	EoF_timer[port];			// Load  Counter
 			P_TOUTS_S2	= 1;					// Start	 Prescaler
 			C_TOUTS_S2	= 1;					// Start	 Timer Counter
 			break;
@@ -507,8 +474,8 @@ void set_EoF_timer(char port)
 		case S3:
 			P_TOUTS_S3	= 0;					// Stop	 Prescaler
 			C_TOUTS_S3	= 0;					// Stop	 Timer Counter
-			P_TOUTR_S3	=	modb_rts_prescaler;	// Load  Prescaler
-			C_TOUTR_S3	=	EoF_timer;			// Load  Counter
+			P_TOUTR_S3	=	modb_rts_prescaler[port];	// Load  Prescaler
+			C_TOUTR_S3	=	EoF_timer[port];			// Load  Counter
 			P_TOUTS_S3	= 1;					// Start	 Prescaler
 			C_TOUTS_S3	= 1;					// Start	 Timer Counter
 			break;
@@ -555,11 +522,11 @@ void Modb_Rx_DeInit(char port)
 
 void Modb_Rx_Ready(char port)
 {
-	modb_rx_count		=	0;		// Sende-	/	Empfangspuffer Index
-	modb_sio_errorflag = 0;
-	modb_rx_buffer_ready = 0;
-	modb_rx_int_state = 1;	// Rx-ISR aktiv
-	timer_function = 0;							// F¸r Timer-ISR: EoF f¸r Rx-Funktion einschalten
+	modb_rx_count[port]		=	0;		// Sende-	/	Empfangspuffer Index
+	modb_sio_errorflag[port] = 0;
+	modb_rx_buffer_ready[port] = 0;
+	modb_rx_int_state[port] = 1;	// Rx-ISR aktiv
+	timer_function[port] = 0;							// F¸r Timer-ISR: EoF f¸r Rx-Funktion einschalten
 
 	if(port == S1)
 	{
@@ -599,48 +566,113 @@ void Modb_Rx_Ready(char port)
 void 	modbus_request(char *pTxBuf, char port)
 {
 	char i, cnt;
+	unsigned char slaveMode = ((Funktion_S1 == MODBUS1_FU && Mode_S1 == SLAVE) && port == S1) || ((Funktion_S2 == MODBUS1_FU && Mode_S2 == SLAVE) && port == S2) || ((Funktion_S3 == MODBUS1_FU && Mode_S3 == SLAVE) && port == S3);
+	modb_tx_count[port] = 0;
+	pTxBuf[modb_tx_count[port]++] = modb_curr_adr[port];
+	pTxBuf[modb_tx_count[port]++] = func_code[port];	
+	
+	if((func_code[port] & 0x80) == 0x80) {
+		// Im Fehlerfall wird nur der Fehlercode ¸bertragen
+		pTxBuf[modb_tx_count[port]++] = byte_count_or_exception[port];
+	} else {
+	
+	if(!slaveMode) {
+		pTxBuf[modb_tx_count[port]++] = ((first_reg[port] >> 8) & 0x00ff);
+		pTxBuf[modb_tx_count[port]++] = (first_reg[port] & 0x00ff);
+	}
 
-		modb_tx_count = 0;
-		pTxBuf[modb_tx_count++] = modb_curr_adr;
-		pTxBuf[modb_tx_count++] = func_code;
-		pTxBuf[modb_tx_count++] = ((first_reg >> 8) & 0x00ff);
-		pTxBuf[modb_tx_count++] = (first_reg & 0x00ff);
-
-	switch(func_code)
+	switch(func_code[port])
 	{
-//		case WRITE_SINGLE_COIL:
-//			break;
-//
-//		case WRITE_SINGLE_HOLDING:
-//			break;
+		case READ_MULTIPLE_COILS:
+					pTxBuf[modb_tx_count[port]++] = ((cnt_regs[port] >> 8) & 0x00ff);
+					pTxBuf[modb_tx_count[port]++] = (cnt_regs[port] & 0x00ff);
+			break;
 
 		case READ_HOLDING_REGS:
 		case READ_INPUT_REGS:
-			pTxBuf[modb_tx_count++] = ((cnt_regs >> 8) & 0x00ff);
-			pTxBuf[modb_tx_count++] = (cnt_regs & 0x00ff);
+			if(slaveMode) {
+				pTxBuf[modb_tx_count[port]++] = byte_count_or_exception[port];
+				cnt = cnt_regs[port]*2;
+				for(i=0; i<cnt; i++) {
+					pTxBuf[modb_tx_count[port]++] = ((unsigned char*)reg_address[port])[i];
+				}
+				break;				
+			}
+			else {
+				pTxBuf[modb_tx_count[port]++] = ((cnt_regs[port] >> 8) & 0x00ff);
+				pTxBuf[modb_tx_count[port]++] = (cnt_regs[port] & 0x00ff);
+			}
 			break;
 
 		case WRITE_SINGLE_HOLDING:
-			pTxBuf[modb_tx_count++] = ((reg_value >> 8) & 0x00ff);
-			pTxBuf[modb_tx_count++] = (reg_value & 0x00ff);
-//			save_tx_count = modb_tx_count;					// f¸r Response-Check
+			if(slaveMode) {
+				pTxBuf[modb_tx_count[port]++] = ((first_reg[port] >> 8) & 0x00ff);
+				pTxBuf[modb_tx_count[port]++] = (first_reg[port] & 0x00ff);
+			}
+				for(i=0; i<2; i++) {
+					pTxBuf[modb_tx_count[port]++] = ((unsigned char*)reg_address[port])[i];
+				}
+//			save_tx_count = modb_tx_count[port];					// f¸r Response-Check
 			break;
-
-//		case WRITE_MULTIPLE_HOLDINGS:
-//			pTxBuf[modb_tx_count++] = ((cnt_regs >> 8) & 0x00ff);
-//			pTxBuf[modb_tx_count++] = (cnt_regs & 0x00ff);
-//			cnt = pTxBuf[modb_tx_count++] = (char)(cnt_regs * 2);			
-//			for(i=0; i<cnt; i++)
-//				pTxBuf[modb_tx_count++] = tx_data_buff[i];
-//			break;
-
-//		case WRITE_MULTIPLE_COILS:
-//
-////			cnt = (char)(cnt_regs / 8); anzahl notwend. bytes aus bitzahl ermitteln.  	
-//			cnt = 1;		// nur vorl‰ufig (< 9 bit ok)
-//			pTxBuf[modb_tx_count++] = cnt;
-//			pTxBuf[modb_tx_count++] = bit_value;	// 1 oder 0
-//			break;
+			
+		case WRITE_MULTIPLE_HOLDINGS:
+			if(slaveMode) {
+					pTxBuf[modb_tx_count[port]++] = ((first_reg[port] >> 8) & 0x00ff);
+					pTxBuf[modb_tx_count[port]++] = (first_reg[port] & 0x00ff);
+			}
+			
+			//ToDo: ¸berpr¸fung testen ob mehrere gesendet werden kˆnnen
+			
+			pTxBuf[modb_tx_count[port]++] = ((cnt_regs[port] >> 8) & 0x00ff);
+			pTxBuf[modb_tx_count[port]++] = (cnt_regs[port] & 0x00ff);
+			
+			if(!slaveMode) {
+				cnt = pTxBuf[modb_tx_count[port]++] = (char)(cnt_regs[port] * 2);			
+				for(i=0; i<cnt; i++) {
+					pTxBuf[modb_tx_count[port]++] = ((unsigned char*)reg_address[port])[i];
+				}
+			}
+			break;
+		
+		case WRITE_MULTIPLE_COILS:		//anbu ƒnderung erweiterung
+			if(slaveMode) {
+					pTxBuf[modb_tx_count[port]++] = ((first_reg[port] >> 8) & 0x00ff);
+					pTxBuf[modb_tx_count[port]++] = (first_reg[port] & 0x00ff);
+			}
+			
+			//ToDo: ¸berpr¸fung testen ob mehrere gesendet werden kˆnnen
+			
+			pTxBuf[modb_tx_count[port]++] = ((cnt_regs[port] >> 8) & 0x00ff);
+			pTxBuf[modb_tx_count[port]++] = (cnt_regs[port] & 0x00ff);
+			
+			if(!slaveMode) {
+				cnt = pTxBuf[modb_tx_count[port]++] = (char)(cnt_regs[port] * 1);			
+				for(i=0; i<cnt; i++) {
+					pTxBuf[modb_tx_count[port]++] = ((unsigned char*)reg_address[port])[i];
+				}
+			}
+			break;
+			
+		case WRITE_SINGLE_COIL:		//anbu ƒnderung erweiterung
+			if(slaveMode) {
+					pTxBuf[modb_tx_count[port]++] = ((first_reg[port] >> 8) & 0x00ff);
+					pTxBuf[modb_tx_count[port]++] = (first_reg[port] & 0x00ff);
+			}
+			
+//			//ToDo: ¸berpr¸fung testen ob mehrere gesendet werden kˆnnen
+//			
+//			pTxBuf[modb_tx_count[port]++] = ((cnt_regs[port] >> 8) & 0x00ff);
+//			pTxBuf[modb_tx_count[port]++] = (cnt_regs[port] & 0x00ff);
+//			
+			if(!slaveMode) {
+//				cnt = pTxBuf[modb_tx_count[port]++] = (char)(cnt_regs[port] * 1);			
+//				for(i=0; i<cnt; i++) {
+					pTxBuf[modb_tx_count[port]++] = ((unsigned char*)reg_address[port])[0];
+					pTxBuf[modb_tx_count[port]++] = ((unsigned char*)reg_address[port])[1];
+//				}
+			}
+			break;
+	}
 	}
 	start_modb_transmit(port);
 }
@@ -648,17 +680,17 @@ void 	modbus_request(char *pTxBuf, char port)
 char check_modb_rx_buffer(char *pRxBuf, char port)
 {	
 	char ret = 0;
-	if(modb_rx_buffer_ready)
-	{	if(modb_sio_errorflag == 0)
-		{	if ( modbus_crc ( pRxBuf, modb_rx_count ) == 0 )			
-			{	if((pRxBuf[0] == modb_curr_adr) || (MODB_MASTER_SLAVE_MODE == SLAVE))	// Vergleich, ist Slave-Adr identisch mit angeforderter, SoF ok
+	unsigned char slaveMode = ((Funktion_S1 == MODBUS1_FU && Mode_S1 == SLAVE) && port == S1) || ((Funktion_S2 == MODBUS1_FU && Mode_S2 == SLAVE) && port == S2) || ((Funktion_S3 == MODBUS1_FU && Mode_S3 == SLAVE) && port == S3);
+	if( modb_rx_buffer_ready[port] ) {
+		if( modb_sio_errorflag[port] == 0 ) {
+			if ( modbus_crc ( pRxBuf, modb_rx_count[port] ) == 0 ) {
+				if((pRxBuf[0] == modb_curr_adr[port]) || slaveMode != FALSE)	// Vergleich, ist Slave-Adr identisch mit angeforderter, SoF ok
 				{
-//					if (pRxBuf[1] == func_code)
-//					{	
+					if (pRxBuf[1] == func_code[port] || slaveMode != FALSE) {
 						ret = RX_BUF_READY;
-//					}
-//					else
-//						ret = EXEPTION;
+					}
+					else
+						ret = EXEPTION;
 				}
 				else
 					ret = SoF_ERROR; 	// Adresszuordnung nicht ok
@@ -667,7 +699,7 @@ char check_modb_rx_buffer(char *pRxBuf, char port)
 				ret = CRC_ERROR;
 		}
 		else
-			ret = modb_sio_errorflag;
+			ret = modb_sio_errorflag[port];
 	}
 	return ret;
 }

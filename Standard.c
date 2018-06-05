@@ -293,13 +293,7 @@ const bicvec bicuser1[]	=	{
 
 
 	//--------------- Pumpenbus ------------
-// ***AnFre	WILO-Modbus
-//  Pumpenparameter "A" Baudrate 5 = 9600
-//  Pumpenparameter "C" SIO-Einstellung Parität und StopBit (2, 3, 6, 10)
-#if WILO > 0 
-	{	EEPADR,	(char *)&ModbusBaudWilo,						MODBUSBAUDWILO_ADR,		1, },
-	{	EEPADR,	(char *)&ModbusSioWilo,							MODBUSSIOWILO_ADR,		1, },
-#endif
+
 #if BUS_PU_MAX > 0
 	{ EEPADR,	(char	*)&BusPuPara[0],	    				BUS_PU_PARA_ADR,                    BUS_PU_LENG },
 #endif

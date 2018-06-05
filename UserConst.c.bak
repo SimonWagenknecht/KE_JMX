@@ -2152,6 +2152,140 @@ const sAnaInpPara AnaInpStandardPara[] = {
 		0},					// Hysterese Grenzwerte 	
 };
 
+#if RM_POWER_ANZ
+const sPowInpPara RmPowerStandardPara[] = {
+								// RM_POW1
+	 {20,					// Skalierung 0 % = 2,0 V
+		1000,				// Skalierung 10,0 V = 100,0 %
+		10},				// Filterzeitkonstante [s]		
+#if RM_POWER_ANZ > 1
+								// RM_POW2 : 
+	 {20,					// Skalierung 0 % = 2,0 V
+		1000,				// Skalierung 10,0 V = 100,0 %
+		10},				// Filterzeitkonstante [s]		
+#endif
+#if RM_POWER_ANZ > 2
+								// RM_POW3 : 
+	 {0,					// Skalierung 0 % = 0,00 V
+		1000,				// Skalierung 10,0 V = 100,0 %
+		10},				// Filterzeitkonstante [s]		
+#endif
+#if RM_POWER_ANZ > 3
+								// RM_POW4 : 
+	 {0,					// Skalierung 0 % = 0,00 V
+		1000,				// Skalierung 10,0 V = 100,0 %
+		10},				// Filterzeitkonstante [s]		
+#endif
+#if RM_POWER_ANZ > 4
+								// RM_POW5 : 
+	 {0,					// Skalierung 0 % = 0,00 V
+		1000,				// Skalierung 10,0 V = 100,0 %
+		10},				// Filterzeitkonstante [s]		
+#endif
+#if RM_POWER_ANZ > 5
+								// RM_POW6 : 
+	 {0,					// Skalierung 0 % = 0,00 V
+		1000,				// Skalierung 10,0 V = 100,0 %
+		10},				// Filterzeitkonstante [s]		
+#endif
+#if RM_POWER_ANZ > 6
+								// RM_POW7 : 
+	 {0,					// Skalierung 0 % = 0,00 V
+		1000,				// Skalierung 10,0 V = 100,0 %
+		10},				// Filterzeitkonstante [s]		
+#endif
+#if RM_POWER_ANZ > 7
+								// RM_POW8 : 
+	 {0,					// Skalierung 0 % = 0,00 V
+		1000,				// Skalierung 10,0 V = 100,0 %
+		10},				// Filterzeitkonstante [s]		
+#endif
+};
+#endif
+
+#if AE_DRUCK_ANZ
+const sAnaInpPara DruckStandardPara[] = {
+// Beispiel: Druck Rücklauf Anlage: 0 bar = 2,0 V, 10 V = 6,00 bar
+//	 {20					// Skalierung 0 bar = 2,0 V
+//		600,				// Skalierung 10 V = 6,00 bar
+//		10,					// Filterzeitkonstante [s]		
+//		200,				// UGW	2,00 bar
+//		000,				// OGW	kein OGW
+//		20},				// Hysterese Grenzwerte 0,20 bar
+
+								// AE_DRU1
+	 {00,					// Skalierung 0 bar = 2,0 V
+		1600,				// Skalierung 10 V = 6,00 bar
+		10,					// Filterzeitkonstante [s]		
+		100,				// UGW = 2,00 bar
+		300,				// OGW = 3,00 bar
+		20},				// Hysterese Grenzwerte 0,20 bar	
+#if AE_DRUCK_ANZ > 1
+								// AE_DRU2 : 
+	 {00,					// Skalierung 0 bar = 2,0 V
+		1600,				// Skalierung 10 V = 6,00 bar
+		10,					// Filterzeitkonstante [s]		
+		100,				// UGW = 2,00 bar
+		300,				// OGW = 3,0 bar
+		20},				// Hysterese Grenzwerte 0,20 bar	
+#endif
+#if AE_DRUCK_ANZ > 2
+								// AE_DRU3 : 
+	 {00,					// Skalierung 0 bar = 2,0 V
+		1600,				// Skalierung 10 V = 6,00 bar
+		10,					// Filterzeitkonstante [s]		
+		100,				// UGW = 2,00 bar
+		300,				// OGW = 3,00 bar
+		20},				// Hysterese Grenzwerte 0,20 bar	
+#endif
+#if AE_DRUCK_ANZ > 3
+								// AE_DRU4 : 
+	 {00,					// Skalierung 0 bar = 2,0 V
+		1600,				// Skalierung 10 V = 6,00 bar
+		10,					// Filterzeitkonstante [s]		
+		100,				// UGW = 2,00 bar
+		300,				// OGW = 3,00 bar
+		20},				// Hysterese Grenzwerte 0,20 bar		
+#endif
+#if AE_DRUCK_ANZ > 4
+								// AE_DRU5 : 
+	 {00,					// Skalierung 0 bar = 2,0 V
+		1600,				// Skalierung 10 V = 6,00 bar
+		10,					// Filterzeitkonstante [s]		
+		100,				// UGW = 2,00 bar
+		300,				// OGW = 3,00 bar
+		20},				// Hysterese Grenzwerte 0,20 bar	
+#endif
+#if AE_DRUCK_ANZ > 5
+								// AE_DRU6 : 
+	 {00,					// Skalierung 0 bar = 2,0 V
+		1600,				// Skalierung 10 V = 6,00 bar
+		10,					// Filterzeitkonstante [s]		
+		100,				// UGW = 2,00 bar
+		300,				// OGW = 3,00 bar
+		20},				// Hysterese Grenzwerte 0,20 bar		
+#endif
+#if AE_DRUCK_ANZ > 6
+								// AE_DRU7 : 
+	 {00,					// Skalierung 0 bar = 2,0 V
+		1600,				// Skalierung 10 V = 6,00 bar
+		10,					// Filterzeitkonstante [s]		
+		100,				// UGW = 2,00 bar
+		300,				// OGW = 3,00 bar
+		20},				// Hysterese Grenzwerte 0,20 bar	
+#endif
+#if AE_DRUCK_ANZ > 7
+								// AE_DRU8 : 
+	 {00,					// Skalierung 0 bar = 2,0 V
+		1600,				// Skalierung 10 V = 6,00 bar
+		10,					// Filterzeitkonstante [s]		
+		100,				// UGW = 2,00 bar
+		300,				// OGW = 3,00 bar
+		20},				// Hysterese Grenzwerte 0,20 bar		
+#endif
+};
+#endif
+
 /*----------------------------------------------------------------------------------*/
 
 /* Tabelle der Aufheizzeiten											*/

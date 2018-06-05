@@ -105,8 +105,8 @@ const char c_Stopbits_S1            = NULL_STOP;            // NULL_STOP = dummy
 const char c_Mode_S2                = MASTER;            // NULL_MODE = dummy,  MASTER, SLAVE
 const UINT c_Baudrate_S2            = 9600;                    // 0         = dummy
 const char c_Funktion_S2            = MODBUS1_FU;              // NULL_FU   = dummy   GBUS_FU, MODBUS1_FU, MBUS1_FU, GENI1_FU...siehe projdef.h
-const char c_Parity_S2              = NULL_PARI;            // NULL_PARI = dummy,  NOPAR, EVEN, ODD 
-const char c_Stopbits_S2            = NULL_STOP;            // NULL_STOP = dummy,  1, 2 
+const char c_Parity_S2              = EVEN;            // NULL_PARI = dummy,  NOPAR, EVEN, ODD 
+const char c_Stopbits_S2            = 1;            // NULL_STOP = dummy,  1, 2 
 
 const char c_Mode_S3                = NULL_MODE;            // NULL_MODE = dummy,  MASTER, SLAVE
 const UINT c_Baudrate_S3            = 0;                    // 0         = dummy

@@ -37,7 +37,7 @@ const bicvec bicuser[]	=	{
 	
 	// Steuer
 	{EEPADR,	(char	*)&Ta1mzk,		TA1MZK_ADR,			1, 	 10},	// [min]
-	{EEPADR,	(char	*)&Ta1mhzk,		TA1MHZK_ADR,		1, 	 12},	// [h]
+	{EEPADR,	(char	*)&Ta1mhzk,		TA1MHZK_ADR,		1, 	  6},	// [h]
 	{EEPADR,	(char	*)&bc_vorra,	BC_VORRA_ADR,		1, 	  0},	// 
 
 	{EEPADR,	(char	*)&Schalt_Pause, SCHALT_PAUSE_ADR,	1, 3},	// 3 Sek Einschaltpause

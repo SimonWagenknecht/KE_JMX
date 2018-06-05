@@ -622,8 +622,8 @@ void Pumpenbus_WW ( char ww )
 			wwd[ww].busTPuEin = pu_control[pu].pu_operation;	
 			#endif
 	
-			#if WILO > 0	
-			wwd[ww].busTPuEin = modb_data[pu].output_value1_temp;	
+			#if WILO_MODBUS > 0	
+			wwd[ww].busTPuEin = modWiloPu[pu].output_value1_temp;	
 			#endif
 		}
 
@@ -651,8 +651,8 @@ void Pumpenbus_WW ( char ww )
 			wwd[ww].busLPuEin = pu_control[pu].pu_operation;	
 			#endif
 	
-			#if WILO > 0	
-			wwd[ww].busLPuEin = modb_data[pu].output_value1_temp;	
+			#if WILO_MODBUS > 0	
+			wwd[ww].busLPuEin = modWiloPu[pu].output_value1_temp;	
 			#endif
 		}
 		
@@ -684,8 +684,8 @@ void Pumpenbus_WW ( char ww )
 			wwd[ww].busZPuEin = pu_control[pu].pu_operation;	
 			#endif
 	
-			#if WILO > 0	
-			wwd[ww].busZPuEin = modb_data[pu].output_value1_temp;	
+			#if WILO_MODBUS > 0	
+			wwd[ww].busZPuEin = modWiloPu[pu].output_value1_temp;	
 			#endif
 		}
 	}

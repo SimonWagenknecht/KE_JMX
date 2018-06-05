@@ -350,25 +350,20 @@
 #define	U26_TASK		Leer
 #endif
 
+////----------------- Wilo Pumpen  Riedel Pool--------------------------------------------------------------
+#if WILO_MODBUS == 1
+#define	U27_STAT		0x00					
+#define U27_BICB		NOIC
+#define	U27_ZAEHL		405						// 10,075 Sek Startverzögerung
+#define	U27_ZEITG		40						// 1 s
+#define	U27_TASK		WiloPumpenSteuerung
+#else
 #define	U27_STAT		0x80					
 #define U27_BICB		NOIC
 #define	U27_ZAEHL		4
 #define	U27_ZEITG		4
 #define	U27_TASK		Leer
-////----------------- Wilo Pumpen  Riedel Pool--------------------------------------------------------------
-//#if WILO_MODBUS == 1
-//#define	U27_STAT		0x00					
-//#define U27_BICB		NOIC
-//#define	U27_ZAEHL		405						// 10,075 Sek Startverzögerung
-//#define	U27_ZEITG		40						// 1 s
-//#define	U27_TASK		WiloPumpenSteuerung
-//#else
-//#define	U27_STAT		0x80					
-//#define U27_BICB		NOIC
-//#define	U27_ZAEHL		4
-//#define	U27_ZEITG		4
-//#define	U27_TASK		Leer
-//#endif	
+#endif	
 //----------------- Reserve --------------------------------------------------------------
 #define	U28_STAT		0x80					
 #define U28_BICB		NOIC

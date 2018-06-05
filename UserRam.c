@@ -211,8 +211,8 @@ char cWiloPuCount; // Anzeigecounter für Anzuzeigende Pumpe in parli-Anzeige
 PuBusStandard *wiloPuBusPara;						// Modbus Struktur für Pumpenparameter (Adresse usw)
 PuBusDynam *wiloPuBusData;
 
-//ModBusWiloPumpen modWiloPuData; 				// Modbus Struktur für Modbustabelle (Datenanzeige und Daten holen getrennt halten!!!)
-//ModBusWiloPumpen modWiloPu[BUS_PU_MAX];	// Struktur für Pumpenparamter aus Kommunikation übertragen auf die jeweiligen Wilo Pumpen 
+ModBusWiloPumpen modWiloPuData; 				// Modbus Struktur für Modbustabelle (Datenanzeige und Daten holen getrennt halten!!!)
+ModBusWiloPumpen modWiloPu[BUS_PU_MAX];	// Struktur für Pumpenparamter aus Kommunikation übertragen auf die jeweiligen Wilo Pumpen 
 
 #endif 
 
@@ -278,87 +278,7 @@ char  uc_dig8[MODBUS_EXT*4];                     // Extraktion 32 Bit auf 4 * 8 
 #endif  // MODBUS_UNI
 
 //----------------------------------------------------------------------------------------------------
-#if ( ((IMPLEMENT_S1 & MODBUS1_IMPL) == MODBUS1_IMPL) || ((IMPLEMENT_S2 & MODBUS1_IMPL) == MODBUS1_IMPL) || ((IMPLEMENT_S3 & MODBUS1_IMPL) == MODBUS1_IMPL) )
 
-unsigned int mbtest_out;
-char modb_curr_port;
-char modb_power_on;
-char modb_tsk_wdg_count;
-char modb_bus_status;
-char modb_leng_tx;
-char modb_rts_prescaler;
-char modb_rts_timer;	
-char rq_idx;		// wegen parli temp. hier
-char bus_tio_count;
-char modb_state_control;	// Statemachine control 
-char modb_rx_buff_size;
-char modb_rx_status;
-char modb_tx_count;
-char modb_rx_count;
-char modb_rx_buffer_ready;
-char modb_rx_int_state;
-char modb_rx_rxtio;
-char modb_sio_errorflag;
-char EoF_timer;
-char bus_timeout_com;
-char bus_timeout_com_shad;
-char pu_timeout_com;
-char timer_function;
-char Bus_restart;
-char cycle_timer;
-char cycle_timer1;
-char func_code;
-char cycle_count;
-char master_slave_func;
-unsigned int first_reg;
-unsigned int cnt_regs;
-unsigned int modb_adr_offset;
-char save_tx_count;
-char modb_slave_idx;
-char bit_value;
-unsigned int reg_value;
-//char tx_data_buff[8];
-char input_reg_idx;
-char holding_reg_idx;
-char modb_curr_adr;
-char SerialDeviceNr;
-char TestHandMode;
-char TaskTimer1;
-
-modb_control_value	modb_control[MODB_SLAVE_MAX];
-
-char TestpuMax;
-
-#if ( WILO )
-
-// Strukturvariable
-modb_data_value	modb_data[MODB_SLAVE_MAX];
-int input_reg6_celsius[MODB_SLAVE_MAX];
-char SerialDeviceNr;
-char ModbusBaudWilo;		// WILO Pumpenparameter "A" Baudrate 5 = 9600 fest
-char ModbusSioWilo;			// WILO Pumpenparameter "C" SIO-Einstellung Parität und StopBit (2, 3, 6, 10)
-#endif
-
-#if ( BELIMO )
-char modb_device_idx;
-char Gateway_Device_idx;
-char Gateway_Device_wr_idx;
-unsigned char Gateway_Device_Present[DEVICE_MAX];
-unsigned char Gateway_Device_Dissable[DEVICE_MAX];
-unsigned int Modb_holding_reg[DEVICE_MAX][MODB_HOLDING_REGS];
-unsigned int ModB_output_value[DEVICE_MAX][MODB_WR_HOLDING_REGS];
-unsigned int ModB_out_value_shad[DEVICE_MAX][MODB_WR_HOLDING_REGS];
-ULONG op_hours[DEVICE_MAX];
-#endif
-
-#if ( KWB_KESSEL )
-char ModbusAlarm[MODB_SLAVE_MAX][256];
-#endif
-
-#endif
-
-
-//----------------------------------------------------------------------------------------------------
 
 // Variabler Kategorie-Typ
 char KatVar_Typ[16];

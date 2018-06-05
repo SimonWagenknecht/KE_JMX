@@ -13,7 +13,7 @@ const Pgrup hk1[] = {
 	{" 06;"," SO/WI HK-EXTRA "," 1=JA  ", P&hks[HK1].SoWiExtra,		 US_CHAR, 0, P&hid1,	V0, 0, 0},
 	{" 07;"," Ta-WINTER [EIN]"," C    ", P&hks[HK1].Tae,						US_INT, 1, P&hid1,	V0, 0, 0},
 	{" 08;"," Ta-SOMMER [AUS]"," C    ", P&hks[HK1].Taa,						US_INT, 1, P&hid1,	V0, 0, 0},
-	{"*09;"," SOMMER HK1 ?   ","       ", P&hkd[HK1].sowi,		 JANEIN_FORM, 0, P&hid1,	V0, 0, 0},
+	{"*09;"," SOMMER HK  ?   ","       ", P&hkd[HK1].sowi,		 JANEIN_FORM, 0, P&hid1,	V0, 0, 0},
 
 	{" 10;"," STEIGUNG       ","       ", P&hks[HK1].Anst,					US_INT, 2, P&hid1,	V1, 0, 0},
 	{" 11;"," NIVEAU         "," C    ", P&hks[HK1].Tvpa,					US_INT, 1, P&hid1,	V1, 0, 0},

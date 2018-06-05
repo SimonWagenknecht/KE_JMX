@@ -1173,8 +1173,8 @@ void Pumpenbus_Sol ( char so )
 			sod[so].busSolPuEin = pu_control[pu].pu_operation;	
 			#endif
 	
-			#if WILO > 0	
-			sod[so].busSolPuEin = modb_data[pu].output_value1_temp;	
+			#if WILO_MODBUS > 0	
+			sod[so].busSolPuEin = modWiloPu[pu].output_value1_temp;	
 			#endif
 		}
 
@@ -1203,8 +1203,8 @@ void Pumpenbus_Sol ( char so )
 			sod[so].busPufPuEin = pu_control[pu].pu_operation;	
 			#endif
 	
-			#if WILO > 0	
-			sod[so].busPufPuEin = modb_data[pu].output_value1_temp;	
+			#if WILO_MODBUS > 0	
+			sod[so].busPufPuEin = modWiloPu[pu].output_value1_temp;	
 			#endif
 		}
 

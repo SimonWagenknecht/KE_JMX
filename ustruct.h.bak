@@ -611,7 +611,6 @@ typedef struct rd{
 	char 	ucHeat;					// Meldung Heizen
 
 	UINT	leistBegrAbsenk;	// [K] * 10	
-	UINT	puBmVerz;				// [min/2]
 	
 	char	ventiloeffng;
 

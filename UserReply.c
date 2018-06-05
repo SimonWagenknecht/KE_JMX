@@ -1642,30 +1642,20 @@ char* get_feldadresse(char *wert, unsigned char ucExp_num, unsigned char ucAttr,
 
 
 
-// Wilopumpen mit Modbus -- Riedel Pool
+	// Wilopumpen mit Modbus
 	#if WILO_MODBUS == 1
-	
-	// ------Frenzel-Wilo
-			if ( SerialDeviceNr == 0 )
-			SerialDeviceNr = 1;
-		else if ( SerialDeviceNr > BUS_PU_MAX )
-			SerialDeviceNr = BUS_PU_MAX;
-	// ------ende Frenzel-Wilo
-	
-//	// --------Wilo- Riedel Pool
-//		if ( cWiloPuCount == 0 )
-//			cWiloPuCount = 1;
-//		else if ( cWiloPuCount > BUS_PU_MAX )
-//			cWiloPuCount = BUS_PU_MAX;
-//	// --------Wilo- Riedel Pool
-	
+
+		if ( cWiloPuCount == 0 )
+			cWiloPuCount = 1;
+		else if ( cWiloPuCount > BUS_PU_MAX )
+			cWiloPuCount = BUS_PU_MAX;
+		
 		if ( ucExp_num_wilo == 0 )
 		{
 			if(alfunc == IDX0_FELD)
 				ucExp_num_wilo = 1;
 			else			
-				ucExp_num_wilo = SerialDeviceNr; // Frenzel-Wilo
-				//ucExp_num_wilo = cWiloPuCount;	// Wilo Riedel Pool	
+				ucExp_num_wilo = cWiloPuCount;
 		}		
 		else if ( ucExp_num_wilo > BUS_PU_MAX )
 			ucExp_num_wilo = BUS_PU_MAX;
@@ -1674,13 +1664,11 @@ char* get_feldadresse(char *wert, unsigned char ucExp_num, unsigned char ucAttr,
 		if ( ( wert >= (char *)&BusPuPara[0] ) && ( wert < (char *)&BusPuPara[1] ) )
 			wert += ( (char *)&BusPuPara[1] - (char *)&BusPuPara[0] ) * ( ucExp_num_wilo-1 );	
 		else if ( ( wert >= (char *)&BusPuData[0] ) && ( wert < (char *)&BusPuData[1] ) )
-			wert += ( (char *)&BusPuData[1] - (char *)&BusPuData[0] ) * ( ucExp_num_wilo-1 );	
-		else if ( ( wert >= (char *)&modb_control[0] ) && ( wert < (char *)&modb_control[1] ) )
-			wert += ( (char *)&modb_control[1] - (char *)&modb_control[0] ) * ( ucExp_num_wilo-1 );	
-		else 	if ( ( wert >= (char *)&modb_data[0] ) && ( wert < (char *)&modb_data[1] ) )
-			wert += ( (char *)&modb_data[1] - (char *)&modb_data[0] ) * ( ucExp_num_wilo-1 );
+			wert += ( (char *)&BusPuData[1] - (char *)&BusPuData[0] ) * ( ucExp_num_wilo-1 );
+		else if ( ( wert >= (char *)&modWiloPu[0] ) && ( wert < (char *)&modWiloPu[1] ) )
+			wert += ( (char *)&modWiloPu[1] - (char *)&modWiloPu[0] ) * ( ucExp_num_wilo-1 );	
 
-	#endif // Wilo
+	#endif // WILO_MODBUS == 1
 
 	// Grundfospumpen mit Modbus
 	#if GRUNDFOS_MODBUS == 1
@@ -2198,13 +2186,7 @@ void SysEEP_InitUser_67(void)
 		bicbus(EEPADR,	(char *)&Stopbits_S3,	STOPBITS_S3_EADR,		1, BICWR);
 	}	
 
-// ***AnFre für WILO-ModBus
-// Pumpen-Parameter A Achtung!: im R66E immer 5 = 9600 Baud
-	ModbusBaudWilo	= c_ModbusBaudWilo;
-	bicbus(EEPADR,	(char *)&ModbusBaudWilo,	MODBUSBAUDWILO_ADR,	1, BICWR);
-// Pumpen-Parameter C
-	ModbusSioWilo	= c_ModbusSioWilo;
-	bicbus(EEPADR,	(char *)&ModbusSioWilo,	MODBUSSIOWILO_ADR,		1, BICWR);
+
 
 //---------------------------------------------------------------------------------------------
 
