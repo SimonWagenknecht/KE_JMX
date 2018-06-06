@@ -80,38 +80,38 @@ const Pgrup hk1[] = {
 
 // ***AnFre	{" 28:"," ANFORD.ANHEBUNG"," K     ", P&hks[HK1].TvpAnh,				US_INT, 1, P&vis,			V1, 0, 0},
 
-	{" 30;"," ABSENK-BEGIN WO"," h:min ", P&abs_tab[HK1][0].begin,ZEIT_FORM,0, P&hid1,		V1, 0, 0},
-	{" 31;"," ABSENK-DAUER WO"," h     ", P&abs_tab[HK1][0].dauer, US_CHAR, 0, P&hid1,		V1, 0, 0},
-	{" 32;"," ABSENK-WERT  WO"," K     ", P&abs_tab[HK1][0].abwert,	US_INT, 1, P&hid1,		V1, 0, 0},
-	{" 34;"," GANZE WOCHE SET"," 1=JA  ", P&setwoche[HK1],				 US_CHAR, 0, P&hid1,		V1, 0, 0},
+	{" 30;"," ABSENK-BEGIN WO"," h:min ", P&abs_tab[HK1][0].begin,ZEIT_FORM,0, P&hid1,		V0, 0, 0},
+	{" 31;"," ABSENK-DAUER WO"," h     ", P&abs_tab[HK1][0].dauer, US_CHAR, 0, P&hid1,		V0, 0, 0},
+	{" 32;"," ABSENK-WERT  WO"," K     ", P&abs_tab[HK1][0].abwert,	US_INT, 1, P&hid1,		V0, 0, 0},
+	{" 34;"," GANZE WOCHE SET"," 1=JA  ", P&setwoche[HK1],				 US_CHAR, 0, P&hid1,		V0, 0, 0},
 
-	{" 35;"," ABSENK-BEGIN Mo"," h:min ", P&abs_tab[HK1][1].begin,ZEIT_FORM,0, P&hid1,		V1, 0, 0},
-	{" ->;"," ABSENK-DAUER Mo"," h     ", P&abs_tab[HK1][1].dauer, US_CHAR, 0, P&hid1,		V1, 0, 0},
-	{" ->;"," ABSENK-WERT  Mo"," K     ", P&abs_tab[HK1][1].abwert,	US_INT, 1, P&hid1,		V1, 0, 0},
+	{" 35;"," ABSENK-BEGIN Mo"," h:min ", P&abs_tab[HK1][1].begin,ZEIT_FORM,0, P&hid1,		V0, 0, 0},
+	{" ->;"," ABSENK-DAUER Mo"," h     ", P&abs_tab[HK1][1].dauer, US_CHAR, 0, P&hid1,		V0, 0, 0},
+	{" ->;"," ABSENK-WERT  Mo"," K     ", P&abs_tab[HK1][1].abwert,	US_INT, 1, P&hid1,		V0, 0, 0},
 
-	{" 36;"," ABSENK-BEGIN Di"," h:min ", P&abs_tab[HK1][2].begin,ZEIT_FORM,0, P&hid1,		V1, 0, 0},
-	{" ->;"," ABSENK-DAUER Di"," h     ", P&abs_tab[HK1][2].dauer, US_CHAR, 0, P&hid1,		V1, 0, 0},
-	{" ->;"," ABSENK-WERT  Di"," K     ", P&abs_tab[HK1][2].abwert,	US_INT, 1, P&hid1,		V1, 0, 0},
+	{" 36;"," ABSENK-BEGIN Di"," h:min ", P&abs_tab[HK1][2].begin,ZEIT_FORM,0, P&hid1,		V0, 0, 0},
+	{" ->;"," ABSENK-DAUER Di"," h     ", P&abs_tab[HK1][2].dauer, US_CHAR, 0, P&hid1,		V0, 0, 0},
+	{" ->;"," ABSENK-WERT  Di"," K     ", P&abs_tab[HK1][2].abwert,	US_INT, 1, P&hid1,		V0, 0, 0},
 
-	{" 37;"," ABSENK-BEGIN Mi"," h:min ", P&abs_tab[HK1][3].begin,ZEIT_FORM,0, P&hid1,		V1, 0, 0},
-	{" ->;"," ABSENK-DAUER Mi"," h     ", P&abs_tab[HK1][3].dauer, US_CHAR, 0, P&hid1,		V1, 0, 0},
-	{" ->;"," ABSENK-WERT  Mi"," K     ", P&abs_tab[HK1][3].abwert,	US_INT, 1, P&hid1,		V1, 0, 0},
+	{" 37;"," ABSENK-BEGIN Mi"," h:min ", P&abs_tab[HK1][3].begin,ZEIT_FORM,0, P&hid1,		V0, 0, 0},
+	{" ->;"," ABSENK-DAUER Mi"," h     ", P&abs_tab[HK1][3].dauer, US_CHAR, 0, P&hid1,		V0, 0, 0},
+	{" ->;"," ABSENK-WERT  Mi"," K     ", P&abs_tab[HK1][3].abwert,	US_INT, 1, P&hid1,		V0, 0, 0},
 
-	{" 38;"," ABSENK-BEGIN Do"," h:min ", P&abs_tab[HK1][4].begin,ZEIT_FORM,0, P&hid1,		V1, 0, 0},
-	{" ->;"," ABSENK-DAUER Do"," h     ", P&abs_tab[HK1][4].dauer, US_CHAR, 0, P&hid1,		V1, 0, 0},
-	{" ->;"," ABSENK-WERT  Do"," K     ", P&abs_tab[HK1][4].abwert,	US_INT, 1, P&hid1,		V1, 0, 0},
+	{" 38;"," ABSENK-BEGIN Do"," h:min ", P&abs_tab[HK1][4].begin,ZEIT_FORM,0, P&hid1,		V0, 0, 0},
+	{" ->;"," ABSENK-DAUER Do"," h     ", P&abs_tab[HK1][4].dauer, US_CHAR, 0, P&hid1,		V0, 0, 0},
+	{" ->;"," ABSENK-WERT  Do"," K     ", P&abs_tab[HK1][4].abwert,	US_INT, 1, P&hid1,		V0, 0, 0},
 
-	{" 39;"," ABSENK-BEGIN Fr"," h:min ", P&abs_tab[HK1][5].begin,ZEIT_FORM,0, P&hid1,		V1, 0, 0},
-	{" ->;"," ABSENK-DAUER Fr"," h     ", P&abs_tab[HK1][5].dauer, US_CHAR, 0, P&hid1,		V1, 0, 0},
-	{" ->;"," ABSENK-WERT  Fr"," K     ", P&abs_tab[HK1][5].abwert,	US_INT, 1, P&hid1,		V1, 0, 0},
+	{" 39;"," ABSENK-BEGIN Fr"," h:min ", P&abs_tab[HK1][5].begin,ZEIT_FORM,0, P&hid1,		V0, 0, 0},
+	{" ->;"," ABSENK-DAUER Fr"," h     ", P&abs_tab[HK1][5].dauer, US_CHAR, 0, P&hid1,		V0, 0, 0},
+	{" ->;"," ABSENK-WERT  Fr"," K     ", P&abs_tab[HK1][5].abwert,	US_INT, 1, P&hid1,		V0, 0, 0},
 
-	{" 40;"," ABSENK-BEGIN Sa"," h:min ", P&abs_tab[HK1][6].begin,ZEIT_FORM,0, P&hid1,		V1, 0, 0},
-	{" ->;"," ABSENK-DAUER Sa"," h     ", P&abs_tab[HK1][6].dauer, US_CHAR, 0, P&hid1,		V1, 0, 0},
-	{" ->;"," ABSENK-WERT  Sa"," K     ", P&abs_tab[HK1][6].abwert,	US_INT, 1, P&hid1,		V1, 0, 0},
+	{" 40;"," ABSENK-BEGIN Sa"," h:min ", P&abs_tab[HK1][6].begin,ZEIT_FORM,0, P&hid1,		V0, 0, 0},
+	{" ->;"," ABSENK-DAUER Sa"," h     ", P&abs_tab[HK1][6].dauer, US_CHAR, 0, P&hid1,		V0, 0, 0},
+	{" ->;"," ABSENK-WERT  Sa"," K     ", P&abs_tab[HK1][6].abwert,	US_INT, 1, P&hid1,		V0, 0, 0},
 
-	{" 41;"," ABSENK-BEGIN So"," h:min ", P&abs_tab[HK1][7].begin,ZEIT_FORM,0, P&hid1,		V1, 0, 0},
-	{" ->;"," ABSENK-DAUER So"," h     ", P&abs_tab[HK1][7].dauer, US_CHAR, 0, P&hid1,		V1, 0, 0},
-	{" ->;"," ABSENK-WERT  So"," K     ", P&abs_tab[HK1][7].abwert,	US_INT, 1, P&hid1,		V1, 0, 0},
+	{" 41;"," ABSENK-BEGIN So"," h:min ", P&abs_tab[HK1][7].begin,ZEIT_FORM,0, P&hid1,		V0, 0, 0},
+	{" ->;"," ABSENK-DAUER So"," h     ", P&abs_tab[HK1][7].dauer, US_CHAR, 0, P&hid1,		V0, 0, 0},
+	{" ->;"," ABSENK-WERT  So"," K     ", P&abs_tab[HK1][7].abwert,	US_INT, 1, P&hid1,		V0, 0, 0},
 	
 	
 //#####ulsch : Ferienautomatik #####

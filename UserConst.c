@@ -249,7 +249,8 @@ const char c_ModbusSioWilo					= 6;				// WILO Pumpenparameter "C" SIO-Einstellu
 			                                 //        betrifft InOutR.c, UserRam.c uramext.h
 			//#define VERS_DATUM  {18,3,14}  // Josch: ArchivSDM.c erweitert. Datenblöcke enthalten zusätzlich Archiv-Info Kennzeichen. System vom {18,3,14} erforderlich
 		
-#define VERS_DATUM	{18,03,21}	 // 	SiWa: Systemanpassung von 12.04.17 auf 14.03.18
+//#define VERS_DATUM	{18,03,21}	 // 	SiWa: Systemanpassung von 12.04.17 auf 14.03.18
+#define VERS_DATUM	{18,6,6}	 // 	SiWa: Systemanpassung von 12.04.17 auf 14.03.18 und ModBus-Wilo-Implementierung, Absenktage in parli_HK1 aus komtab entfernt
 /*--------------------------------------------------------------------------------*/
 /* 										Liste von Anlagen																						*/
 /*--------------------------------------------------------------------------------*/
